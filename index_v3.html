@@ -318,7 +318,7 @@ if('serviceWorker' in navigator){
     <div id="loto-status" style="background:var(--c2);border-radius:14px;padding:12px;border:1px solid var(--brd);margin-bottom:16px;font-size:.82rem;color:#888;"></div>
     
     <!-- Machine display -->
-    <div style="background:linear-gradient(135deg,#1a0a0a,#2a1010);border:3px solid var(--red);border-radius:20px;padding:20px;margin-bottom:20px;box-shadow:0 0 30px rgba(192,57,43,.4);">
+    <div id="loto-machine-box" style="background:linear-gradient(135deg,#1a0a0a,#2a1010);border:3px solid var(--red);border-radius:20px;padding:20px;margin-bottom:20px;box-shadow:0 0 30px rgba(192,57,43,.4);">
       <div style="font-size:.7rem;color:#555;text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;">BAR ÉQUIPE A</div>
       <div id="loto-reels" style="display:flex;justify-content:center;gap:12px;margin-bottom:16px;">
         <div style="width:72px;height:72px;background:#111;border:2px solid #333;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:2.2rem;" id="reel-0">🎰</div>
@@ -449,7 +449,7 @@ if('serviceWorker' in navigator){
       <div style="font-family:Bebas Neue,sans-serif;font-size:.85rem;letter-spacing:2px;color:var(--gld);margin-bottom:8px;">🏷️ CARTES & QR CODES</div>
       <div id="courses-qr-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;"></div>
       <button id="courses-qr-add-btn" onclick="addCoursesQR()" style="display:none;background:rgba(243,156,18,.1);color:var(--gld);border:1px solid rgba(243,156,18,.2);border-radius:9px;padding:8px 14px;font-family:inherit;font-size:.76rem;cursor:pointer;">📷 Ajouter carte/QR</button>
-      <input type="file" id="courses-qr-input" accept="image/*" capture="environment" style="display:none;" onchange="handleCoursesQRFile(this)">
+      <input type="file" id="courses-qr-input" accept="image/*" style="display:none;" onchange="handleCoursesQRFile(this)">
     </div>
     <!-- Liste de courses -->
     <div style="font-family:Bebas Neue,sans-serif;font-size:.85rem;letter-spacing:2px;color:var(--blu);margin-bottom:8px;">📝 LISTE DE COURSES</div>
@@ -549,6 +549,16 @@ async function AF_safe(u,o){return null;}
 var M = [{"id": 0, "nom": "ADER", "pre": "Jéro."}, {"id": 1, "nom": "ARNAUD", "pre": "Dan"}, {"id": 2, "nom": "ARNAUD", "pre": "Luke"}, {"id": 3, "nom": "ARNAUD", "pre": "Gil"}, {"id": 4, "nom": "AUSSEL", "pre": "Roxane"}, {"id": 5, "nom": "AVRIAL", "pre": "Thibault"}, {"id": 6, "nom": "BENET", "pre": "Manon"}, {"id": 7, "nom": "BENTEJAC", "pre": "Maxime"}, {"id": 8, "nom": "BOSSIN", "pre": "Briggy"}, {"id": 9, "nom": "BOSSIN-NATIER", "pre": "Terry"}, {"id": 10, "nom": "BOUCHER", "pre": "Alexandre"}, {"id": 11, "nom": "BOUTONNET", "pre": "Jonathan"}, {"id": 12, "nom": "BRUN", "pre": "Marie-Hélène"}, {"id": 13, "nom": "CAPDET", "pre": "Brice"}, {"id": 14, "nom": "CARNET", "pre": "Jérôme"}, {"id": 15, "nom": "CASTANIER", "pre": "Jean-Michel"}, {"id": 16, "nom": "CASTET", "pre": "Lionel"}, {"id": 17, "nom": "CHAUVET", "pre": "Emmanuella"}, {"id": 18, "nom": "CICCARIELLO", "pre": "Christophe"}, {"id": 19, "nom": "CONRAZIER", "pre": "Bastien"}, {"id": 20, "nom": "CONTOUR", "pre": "Batiste"}, {"id": 21, "nom": "COUDERC", "pre": "Sacha"}, {"id": 22, "nom": "CRIADO", "pre": "Geoffrey"}, {"id": 23, "nom": "DAILLOUX", "pre": "Damien"}, {"id": 24, "nom": "DANIS", "pre": "Solène"}, {"id": 25, "nom": "DE GIRARD", "pre": "Franck"}, {"id": 26, "nom": "DE MARE", "pre": "Cyril"}, {"id": 27, "nom": "DEJEAN", "pre": "David"}, {"id": 28, "nom": "DIAZ", "pre": "Nahuel"}, {"id": 29, "nom": "DIAZ", "pre": "Yannick"}, {"id": 30, "nom": "DUCES", "pre": "Delphine"}, {"id": 31, "nom": "DUPIN", "pre": "Aurélien"}, {"id": 32, "nom": "DURAND", "pre": "Alexis"}, {"id": 33, "nom": "DURAND", "pre": "Vincent"}, {"id": 34, "nom": "ELOIRE", "pre": "Pascal"}, {"id": 35, "nom": "ENJALRAN", "pre": "Frédéric"}, {"id": 36, "nom": "FABRE", "pre": "Sébastien"}, {"id": 37, "nom": "FARRAS", "pre": "Philippe"}, {"id": 38, "nom": "FESQUET", "pre": "Loïc"}, {"id": 39, "nom": "FOURNIER", "pre": "Agathe"}, {"id": 40, "nom": "GARCIA", "pre": "Andy"}, {"id": 41, "nom": "GARCIA", "pre": "Julie"}, {"id": 42, "nom": "GARCIA", "pre": "Valentin"}, {"id": 43, "nom": "GEVAUDAN", "pre": "Christelle"}, {"id": 44, "nom": "GIL", "pre": "Gaëlle"}, {"id": 45, "nom": "GILLES", "pre": "Baptiste"}, {"id": 46, "nom": "GILLES", "pre": "Romain"}, {"id": 47, "nom": "GOMEZ", "pre": "Luc"}, {"id": 48, "nom": "GOUSSET", "pre": "Hugo"}, {"id": 49, "nom": "HUART", "pre": "Gérard"}, {"id": 50, "nom": "HYJAZI", "pre": "Dylan"}, {"id": 51, "nom": "IVCHINE", "pre": "Christophe"}, {"id": 52, "nom": "IVCHINE", "pre": "Nathan"}, {"id": 53, "nom": "JACONO", "pre": "Thibault"}, {"id": 54, "nom": "JAVITARY", "pre": "Lana"}, {"id": 55, "nom": "JAVITARY", "pre": "Stéphanie"}, {"id": 56, "nom": "JESTIN", "pre": "Florian"}, {"id": 57, "nom": "KALT", "pre": "Océane"}, {"id": 58, "nom": "KILETZKY", "pre": "Caroline"}, {"id": 59, "nom": "LAACHI", "pre": "Samy"}, {"id": 60, "nom": "LACAZE", "pre": "Grégory"}, {"id": 61, "nom": "LAURENT", "pre": "Noa"}, {"id": 62, "nom": "LEBRUN", "pre": "Logan"}, {"id": 63, "nom": "LIEGOIS", "pre": "Tom"}, {"id": 64, "nom": "LLORIA", "pre": "David"}, {"id": 65, "nom": "MANDON", "pre": "Jean-Claude"}, {"id": 66, "nom": "MARCO", "pre": "Laurent"}, {"id": 67, "nom": "MARTINEZ", "pre": "Hugo"}, {"id": 68, "nom": "MENDES", "pre": "Mattéo"}, {"id": 69, "nom": "MERY", "pre": "Pierre"}, {"id": 70, "nom": "MOTTIN", "pre": "Victor"}, {"id": 71, "nom": "MOULLIN-TRAFFORT", "pre": "Tristan"}, {"id": 72, "nom": "MOULLIN-TRAFFORT", "pre": "Lou"}, {"id": 73, "nom": "MUNOZ", "pre": "Gérald"}, {"id": 74, "nom": "MUNOZ", "pre": "Alexandra"}, {"id": 75, "nom": "NIORT", "pre": "Marie"}, {"id": 76, "nom": "OLIVA", "pre": "Cédric"}, {"id": 77, "nom": "OLOMBEL", "pre": "Xavier"}, {"id": 78, "nom": "PADILLA", "pre": "Roman"}, {"id": 79, "nom": "PEINADO", "pre": "Noémie"}, {"id": 80, "nom": "PHAM DANG HUU DUC", "pre": "Damien"}, {"id": 81, "nom": "PHAM DANG HUU DUC", "pre": "Pierre"}, {"id": 82, "nom": "PIGEARD", "pre": "Laurent"}, {"id": 83, "nom": "PIGEARD", "pre": "Yanis"}, {"id": 84, "nom": "POUILLY", "pre": "Vincent"}, {"id": 85, "nom": "RAULIN", "pre": "Adrien"}, {"id": 86, "nom": "RAYNAL", "pre": "Ludovic"}, {"id": 87, "nom": "REBILLARD", "pre": "Gervais"}, {"id": 88, "nom": "RENOUT", "pre": "Cyril"}, {"id": 89, "nom": "RINCON", "pre": "Laurent"}, {"id": 90, "nom": "ROBERT", "pre": "Jérémy"}, {"id": 91, "nom": "RODRIGUES", "pre": "Julien"}, {"id": 92, "nom": "ROMAIN", "pre": "Jérémy"}, {"id": 93, "nom": "SEBASTIAN", "pre": "Benoît"}, {"id": 94, "nom": "SECONDY", "pre": "Mathieu"}, {"id": 95, "nom": "SILVESTRE", "pre": "Anaïs"}, {"id": 96, "nom": "SILVESTRE", "pre": "Gérald (perso)"}, {"id": 97, "nom": "SILVESTRE", "pre": "Gérald (pro)"}, {"id": 98, "nom": "SORTON", "pre": "Tony"}, {"id": 99, "nom": "SUSSI", "pre": "Simon"}, {"id": 100, "nom": "TORTORICI", "pre": "Ugo"}, {"id": 101, "nom": "TOUZET", "pre": "Kilian"}, {"id": 102, "nom": "VEAUTE", "pre": "Guillaume"}, {"id": 103, "nom": "VIALA", "pre": "Morgan"}, {"id": 104, "nom": "VIEU", "pre": "Sébastien"}];
 var DEFAULT_DRINKS = [{"id": 1, "name": "Coca Zéro", "emoji": "🥤", "price": 1, "stock": 0, "cost": 0.5, "photo": null}, {"id": 2, "name": "San Pellegrino Agrumes", "emoji": "🍊", "price": 1, "stock": 0, "cost": 0.5, "photo": null}, {"id": 3, "name": "San Pellegrino Citron", "emoji": "🍋", "price": 1, "stock": 0, "cost": 0.5, "photo": null}, {"id": 4, "name": "San Pellegrino Monte", "emoji": "🧊", "price": 1, "stock": 0, "cost": 0.5, "photo": null}, {"id": 5, "name": "Ice Tea", "emoji": "🍵", "price": 1, "stock": 0, "cost": 0.5, "photo": null}, {"id": 6, "name": "Orangina", "emoji": "🍊", "price": 1, "stock": 0, "cost": 0.5, "photo": null}, {"id": 7, "name": "Bière", "emoji": "🍺", "price": 1, "stock": 0, "cost": 0.6, "photo": null}, {"id": 8, "name": "Panaché", "emoji": "🍺", "price": 1, "stock": 0, "cost": 0.6, "photo": null}, {"id": 9, "name": "Repas", "emoji": "🍽️", "price": 5, "stock": -1, "cost": 3, "photo": null}];
 
+
+
+// ── LECTURE PHOTO UNIVERSELLE ──
+function readPhoto(file, callback){
+  if(!file)return;
+  var r=new FileReader();
+  r.onload=function(e){callback(e.target.result);};
+  r.onerror=function(){alert('Erreur lecture photo. Essayez une autre image.');};
+  r.readAsDataURL(file);
+}
 
 // ── COMPRESSION PHOTO ──
 function compressPhoto(input,maxW,maxH,quality,callback,isFile){
@@ -1178,14 +1188,7 @@ function OPH(id){
   document.getElementById('PF').value='';
   OP2('ov-ph');
 }
-function PVF(inp){
-  var f=inp.files[0];if(!f)return;
-  compressPhoto(f,200,200,0.7,function(compressed){
-    phD=compressed;
-    var p=document.getElementById('PV');
-    p.src=compressed;p.style.display='block';
-  },true);
-}
+function PVF(inp){var f=inp.files[0];if(!f)return;readPhoto(f,function(data){phD=data;var p=document.getElementById('PV');if(p){p.src=data;p.style.display='block';}});}
 async function SP(){
   if(!phD||phId===null||phId===undefined)return;
   var m=mem.find(function(x){return x.id==phId;});
@@ -1486,7 +1489,7 @@ async function confirmCart(){
   items.forEach(function(item){
     var cost=item.drink.price*item.qty;
     totalCost+=cost;
-    newHistory.push({date:TD(),delta:-item.drink.price,note:item.drink.emoji+' '+item.drink.name+(item.qty>1?' x'+item.qty:'')});
+    newHistory.push({date:TD(),delta:-cost,note:item.drink.emoji+' '+item.drink.name+(item.qty>1?' x'+item.qty:'')});
     // Décrémenter stock
     var dr=drinks.find(function(x){return x.id==item.drink.id;});
     if(dr&&dr.stock>0&&dr.stock!==-1)dr.stock=Math.max(0,dr.stock-item.qty);
@@ -1501,13 +1504,7 @@ async function confirmCart(){
 }
 
 function openAddDrink(){newDrinkPhoto=null;document.getElementById('dk-name').value='';document.getElementById('dk-emoji').value='';document.getElementById('dk-stock').value='';document.getElementById('dk-cost').value='';document.getElementById('ndp-prev').style.display='none';OP2('ov-add-drink');}
-function prevNDP(inp){
-  var f=inp.files[0];if(!f)return;
-  compressPhoto(f,400,400,0.75,function(compressed){
-    newDrinkPhoto=compressed;
-    var p=document.getElementById('ndp-prev');p.src=compressed;p.style.display='block';
-  },true);
-}
+function prevNDP(inp){var f=inp.files[0];if(!f)return;readPhoto(f,function(data){newDrinkPhoto=data;var p=document.getElementById('ndp-prev');if(p){p.src=data;p.style.display='block';}});}
 function saveDrink(){
   var name=document.getElementById('dk-name').value.trim();
   var emoji=document.getElementById('dk-emoji').value.trim()||'🥤';
@@ -1533,7 +1530,7 @@ function editDrink(id){
   if(d.photo){p.src=d.photo;p.style.display='block';}else{p.style.display='none';}
   OP2('ov-edit-drink');
 }
-function prevEDP(inp){var f=inp.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){editDrinkPhoto=e.target.result;var p=document.getElementById('edp-prev');p.src=editDrinkPhoto;p.style.display='block';};r.readAsDataURL(f);}
+function prevEDP(inp){var f=inp.files[0];if(!f)return;readPhoto(f,function(data){editDrinkPhoto=data;var p=document.getElementById('edp-prev');if(p){p.src=data;p.style.display='block';}});}
 function saveEditDrink(){
   var name=document.getElementById('edk-name').value.trim();
   var emoji=document.getElementById('edk-emoji').value.trim();
@@ -1707,15 +1704,35 @@ function openNotifNew(){
   document.getElementById('notif-img-prev').style.display='none';
   OP2('ov-notif-new');
 }
+function saveNotif(){
+  var type=document.getElementById('notif-type').value||'info';
+  var title=document.getElementById('notif-title').value.trim();
+  var body=document.getElementById('notif-body').value.trim();
+  if(!title){
+    document.getElementById('notif-title').style.borderColor='#e74c3c';
+    alert('Le titre est obligatoire');
+    return;
+  }
+  var notifs=getNotifs()||[];
+  var ts=Date.now();
+  notifs.push({type:type,title:title,body:body,img:notifImgData||null,date:TD(),ts:ts,author:cu?cu.pre+' '+cu.nom:'Admin'});
+  saveNotifs(notifs);
+  // Marquer timestamp pour badge
+  if(!TEST_MODE){
+    saveCloud('LASTNOTIFTS',{ts:ts});
+  }
+  notifImgData=null;
+  CL2('ov-notif-new');
+  renderNotifs();
+  updateNotifBadge(true);
+}
 function prevNotifImg(inp){
   var f=inp.files[0];if(!f)return;
-  var r=new FileReader();
-  r.onload=function(e){
-    notifImgData=e.target.result;
+  readPhoto(f,function(data){
+    notifImgData=data;
     var p=document.getElementById('notif-img-prev');
-    p.src=e.target.result;p.style.display='block';
-  };
-  r.readAsDataURL(f);
+    if(p){p.src=data;p.style.display='block';}
+  });
 }
 function delNotif(idx){
   var notifs=getNotifs();
@@ -1760,8 +1777,7 @@ async function initLoto(){
   }
 
   var btn=document.getElementById('loto-btn');
-  var machine=document.getElementById('loto-reels');
-  var machineBox=machine?machine.parentElement:null;
+  var machineBox=document.getElementById('loto-machine-box');
   var winBox=document.getElementById('loto-win-box');
   var loseBox=document.getElementById('loto-lose-box');
   var statusEl=document.getElementById('loto-status');
@@ -1795,7 +1811,7 @@ async function initLoto(){
   }
 
   // ── Pas de gagnant: afficher la machine
-  if(machineBox)machineBox.style.display='block';
+  if(machineBox){machineBox.style.display='block';}
   // Reset reels
   ['reel-0','reel-1','reel-2'].forEach(function(id){
     var el=document.getElementById(id);
@@ -1892,8 +1908,8 @@ async function spinLoto(){
           el.style.background='rgba(39,174,96,.1)';
         });
         // Cacher machine, afficher gagnant
-        var _machBox=document.getElementById('loto-reels');
-        if(_machBox&&_machBox.parentElement)_machBox.parentElement.style.display='none';
+        var _machBox=document.getElementById('loto-machine-box');
+        if(_machBox)_machBox.style.display='none';
         document.getElementById('loto-win-box').style.display='block';
         document.getElementById('loto-win-name').textContent=cu.pre+' '+cu.nom;
         document.getElementById('loto-win-msg').textContent='🏆 JACKPOT ! Boisson offerte créditée ! 🎉';
@@ -2096,18 +2112,16 @@ function addSuggestPhoto(){
 }
 function handleSuggestPhotos(inp){
   Array.from(inp.files).forEach(function(f){
-    var r=new FileReader();
-    r.onload=function(e){
-      _suggestPhotos.push(e.target.result);
+    readPhoto(f,function(data){
+      _suggestPhotos.push(data);
       var prev=document.getElementById('suggest-photos-prev');
       if(prev){
         var img=document.createElement('img');
-        img.src=e.target.result;
-        img.style.cssText='width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid #333;margin:2px;';
+        img.src=data;
+        img.style.cssText='width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid #333;margin:2px;cursor:pointer;';
         prev.appendChild(img);
       }
-    };
-    r.readAsDataURL(f);
+    });
   });
 }
 
@@ -2166,16 +2180,7 @@ function _applyBgPhoto(){
   else{h.style.backgroundImage='';}
 }
 function openBgPhoto(){OP2('ov-bg');}
-function prevBgPhoto(inp){
-  var f=inp.files[0];if(!f)return;
-  var r=new FileReader();
-  r.onload=function(e){
-    var prev=document.getElementById('bg-prev');
-    prev.src=e.target.result;prev.style.display='block';
-    document.getElementById('bg-data').value=e.target.result;
-  };
-  r.readAsDataURL(f);
-}
+function prevBgPhoto(inp){var f=inp.files[0];if(!f)return;readPhoto(f,function(data){var prev=document.getElementById('bg-prev');if(prev){prev.src=data;prev.style.display='block';}document.getElementById('bg-data').value=data;});}
 function saveBgPhoto(){
   var data=document.getElementById('bg-data').value;
   if(!data)return;
@@ -2227,17 +2232,19 @@ function renderCafe(){
 }
 
 function openCafePhoto(){
-  var inp=document.createElement('input');
-  inp.type='file';inp.accept='image/*';
-  inp.onchange=function(){
-    var f=inp.files[0];if(!f)return;
-    var r=new FileReader();
-    r.onload=function(e){
-      var c=getCafe();c.photo=e.target.result;saveCafe(c);renderCafe();
+  var inp=document.getElementById('cafe-photo-inp');
+  if(!inp){
+    inp=document.createElement('input');
+    inp.type='file';inp.accept='image/*';inp.id='cafe-photo-inp';inp.style.display='none';
+    document.body.appendChild(inp);
+    inp.onchange=function(){
+      var f=inp.files[0];if(!f)return;
+      readPhoto(f,function(data){
+        var cf=getCafe();cf.photo=data;saveCafe(cf);renderCafe();
+      });
     };
-    r.readAsDataURL(f);
-  };
-  inp.click();
+  }
+  inp.value='';inp.click();
 }
 
 function cafePris(){
@@ -2399,7 +2406,7 @@ function editConso(idx){
   if(c.photo){p.src=c.photo;p.style.display='block';}else{p.style.display='none';}
   OP2('ov-add-conso');
 }
-function prevConsoImg(inp){var f=inp.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){_consoImgData=e.target.result;var p=document.getElementById('conso-img-prev');p.src=_consoImgData;p.style.display='block';};r.readAsDataURL(f);}
+function prevConsoImg(inp){var f=inp.files[0];if(!f)return;readPhoto(f,function(data){_consoImgData=data;var p=document.getElementById('conso-img-prev');if(p){p.src=data;p.style.display='block';}});}
 function saveAddConso(){
   var name=document.getElementById('conso-name').value.trim();
   if(!name)return;
@@ -2582,15 +2589,13 @@ function addCoursesQR(){
 function handleCoursesQRFile(inp){
   var f=inp.files[0];if(!f)return;
   var label=prompt('Nom pour ce QR/carte (ex: Carrefour):','')||'';
-  var r=new FileReader();
-  r.onload=function(e){
-    var data=getCourses();
-    data.qrs=data.qrs||[];
-    data.qrs.push({img:e.target.result,label:label});
-    saveCourses(data);
+  readPhoto(f,function(data){
+    var courses=getCourses();
+    courses.qrs=courses.qrs||[];
+    courses.qrs.push({img:data,label:label});
+    saveCourses(courses);
     renderCourses();
-  };
-  r.readAsDataURL(f);
+  });
 }
 
 function delCoursesQR(idx){
