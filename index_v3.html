@@ -907,7 +907,7 @@ function OED(id){
 
   // Rendu grille boissons
   grid.innerHTML=drinks.map(function(d){
-    var sb=d.stockBar!==undefined?d.stockBar:(d.stock||0);
+    var sb=(d.stockBar!==undefined&&d.stockBar!==null)?d.stockBar:0;
     var unavail=!adm&&sb===0&&sb!==-1;
     return'<div id="dbc-'+d.id+'" onclick="debitCartAdj('+d.id+',1)" style="background:'+(unavail?'var(--c1)':'var(--c2)')+';border:2px solid var(--brd);border-radius:12px;padding:10px 6px;text-align:center;cursor:'+(unavail?'not-allowed':'pointer')+';opacity:'+(unavail?'0.4':'1')+';position:relative;">'
       +(d.photo?'<img src="'+d.photo+'" style="width:44px;height:44px;border-radius:50%;object-fit:cover;margin-bottom:4px;">':'<div style="font-size:1.5rem;margin-bottom:4px;">'+d.emoji+'</div>')
@@ -943,7 +943,7 @@ function debitCartAdj(drinkId,delta){
   var drinks=getDrinks();
   var d=drinks.find(function(x){return x.id==drinkId;});
   if(!d)return;
-  var sb=d.stockBar!==undefined?d.stockBar:(d.stock||0);
+  var sb=(d.stockBar!==undefined&&d.stockBar!==null)?d.stockBar:0;
   var maxQ=sb===-1?99:sb;
   if(!adm)maxQ=Math.min(maxQ,sb);
   var cur=_debitCart[drinkId]||0;
@@ -1395,14 +1395,18 @@ function getDrinks(){
   try{var d=localStorage.getItem('bar_drinks');if(d){
     var parsed=JSON.parse(d);
     // Migration sécurisée: ajouter stockBar et stockReserve
+    var migrated=false;
     parsed.forEach(function(dr){
       if(dr.stockReserve===undefined){
         dr.stockReserve=(dr.stock===undefined||dr.stock===null)?0:dr.stock;
+        migrated=true;
       }
-      if(dr.stockBar===undefined){dr.stockBar=0;}
-      // stock garde sa valeur originale pour compatibilité
+      if(dr.stockBar===undefined){dr.stockBar=0;migrated=true;}
     });
-    _drinksCache=parsed;return _drinksCache;}}catch{}
+    _drinksCache=parsed;
+    // Sauvegarder si migration pour que Firebase soit à jour
+    if(migrated){localStorage.setItem('bar_drinks',JSON.stringify(parsed));saveDrinksToCloud(parsed);}
+    return _drinksCache;}}catch{}
   _drinksCache=JSON.parse(JSON.stringify(DEFAULT_DRINKS));
   return _drinksCache;
 }
@@ -1415,7 +1419,7 @@ async function renderBar(){
   // Retirer les boissons "Repas" (onglet dédié)
   drinks=drinks.filter(function(d){return!(d.emoji==='🍽️'||(d.name||'').toLowerCase().includes('repas'));});
   // Non-admins : n'afficher que les boissons disponibles au stock
-  if(!adm)drinks=drinks.filter(function(d){var sb=d.stockBar!==undefined?d.stockBar:(d.stock||0);return sb===-1||sb>0;});
+  if(!adm)drinks=drinks.filter(function(d){var sb=(d.stockBar!==undefined&&d.stockBar!==null)?d.stockBar:0;return sb===-1||sb>0;});
   var barQ=(document.getElementById('bar-search')||{value:''}).value||'';
   if(barQ)drinks=drinks.filter(function(d){return(d.name||'').toLowerCase().includes(barQ.toLowerCase());});
   var bad=document.getElementById('bar-admin-btns');if(bad)bad.style.display=adm?'block':'none';
@@ -1465,7 +1469,7 @@ async function renderBar(){
     }
   }
   document.getElementById('drinks-grid').innerHTML=drinks.map(function(d){
-    var sb=d.stockBar!==undefined?d.stockBar:(d.stock||0);
+    var sb=(d.stockBar!==undefined&&d.stockBar!==null)?d.stockBar:0;
     var unlimited=sb===-1;
     var alertB=d.alertLevelBar||2;var warnB=d.warnLevelBar||5;var maxB=d.stockMaxBar||12;
     var sc=unlimited?'var(--grn2)':sb===0?'#e74c3c':sb<=alertB?'#e74c3c':sb<=warnB?'var(--gld)':'var(--grn2)';
@@ -1516,14 +1520,14 @@ function renderCartGrid(){
   // Filtrer: garder repas/illimité ET boissons avec stockBar>0
   var cartDrinks=drinks.filter(function(d){
     if(d.emoji==='🍽️'||(d.name||'').toLowerCase().includes('repas'))return false;
-    var sb=d.stockBar!==undefined?d.stockBar:(d.stock||0);
+    var sb=(d.stockBar!==undefined&&d.stockBar!==null)?d.stockBar:0;
     return sb>0||sb===-1;
   });
   var el=document.getElementById('cart-grid');
   if(!el)return;
   el.innerHTML=cartDrinks.map(function(d){
     var qty=_cart[d.id]||0;
-    var sb=d.stockBar!==undefined?d.stockBar:(d.stock||0);
+    var sb=(d.stockBar!==undefined&&d.stockBar!==null)?d.stockBar:0;
     var unavail=sb===0&&sb!==-1;
     return'<div style="text-align:center;background:var(--c2);border:1px solid var(--brd);border-radius:12px;padding:10px 6px;position:relative;'+(unavail?'opacity:.4;':'')+'cursor:pointer;">'
       +(d.photo?'<img src="'+d.photo+'" style="width:44px;height:44px;border-radius:50%;object-fit:cover;margin-bottom:4px;border:2px solid #333;">':'<div style="font-size:1.6rem;margin-bottom:4px;">'+d.emoji+'</div>')
@@ -2755,7 +2759,7 @@ function openTournee(){
   _tourneeCart={};
   var drinks=getDrinks();
   document.getElementById('tournee-drinks').innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">'
-    +drinks.filter(function(d){var sb=d.stockBar!==undefined?d.stockBar:(d.stock||0);return sb!==0||sb===-1;}).map(function(d){
+    +drinks.filter(function(d){var sb=(d.stockBar!==undefined&&d.stockBar!==null)?d.stockBar:0;return sb!==0||sb===-1;}).map(function(d){
       return'<div style="background:var(--c2);border:2px solid var(--brd);border-radius:10px;padding:10px;display:flex;align-items:center;gap:8px;cursor:pointer;" id="tdr-'+d.id+'">'
         +(d.photo?'<img src="'+d.photo+'" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;">':'<div style="font-size:1.3rem;flex-shrink:0;">'+d.emoji+'</div>')
         +'<div style="flex:1;min-width:0;">'
@@ -3640,7 +3644,7 @@ function delRepasProposal(id,key){
 // ============================================================
 function openTourneeAdmin(){
   if(!adm)return;
-  var drinks=getDrinks().filter(function(d){var sb=d.stockBar!==undefined?d.stockBar:(d.stock||0);return sb!==0;});
+  var drinks=getDrinks().filter(function(d){var sb=(d.stockBar!==undefined&&d.stockBar!==null)?d.stockBar:0;return sb!==0;});
   var opts=drinks.map(function(d){
     return'<option value="'+d.id+'" data-cost="'+(d.cost||0)+'">'+d.name+' (coût: '+(d.cost||0)+'€)</option>';
   }).join('');
