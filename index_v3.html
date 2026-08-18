@@ -1594,7 +1594,7 @@ function safeLocalSet(key,val){
     var nonCritical=['bar_notifs','bar_suggests','bar_consos','bar_courses','cafe_data','bar_loto','loto_state','header_bg','repas_data'];
     nonCritical.forEach(function(k){try{localStorage.removeItem(k);}catch{}});
     try{localStorage.setItem(key,val);}catch(e2){
-      console.warn('localStorage toujours plein après purge:',e2);
+      console.warn('localStorage toujours plein après purge:',e2);if(typeof showToast==='function')showToast('⚠️ Stockage plein : dernière modif. NON sauvegardée sur cet appareil !');
     }
   }
 }
@@ -2107,7 +2107,7 @@ function prevNotifImg(inp){
   var f=inp.files[0];if(!f)return;
   notifImgData=null; // reset pendant chargement
   var btn=document.querySelector('#ov-notif-new .mbt.re');
-  if(btn)btn.disabled=true;
+  if(btn){btn.disabled=true;setTimeout(function(){btn.disabled=false;},8000);}
   readPhoto(f,function(data){
     notifImgData=data;
     var p=document.getElementById('notif-img-prev');
@@ -2551,7 +2551,7 @@ function handleSuggestPhotos(inp){
   var files=Array.from(inp.files);
   if(!files.length)return;
   var btn=document.querySelector('#ov-suggest .mbt.re');
-  if(btn)btn.disabled=true;
+  if(btn){btn.disabled=true;setTimeout(function(){btn.disabled=false;},8000);}
   var loaded=0;
   files.forEach(function(f){
     readPhoto(f,function(data){
@@ -5130,7 +5130,7 @@ function _adjConso(btn,delta){
 function suggestPhotoPreview(inp){
   var f=inp.files[0];if(!f)return;
   var btn=document.querySelector('#ov-suggest .mbt.re');
-  if(btn)btn.disabled=true;
+  if(btn){btn.disabled=true;setTimeout(function(){btn.disabled=false;},8000);}
   readPhoto(f,function(data){
     var p=document.getElementById('suggest-photo-prev');
     if(p){p.src=data;p.style.display='block';}
@@ -5162,7 +5162,7 @@ function delSuggest(i){
 function notifPhotoPreview(inp){
   var f=inp.files[0];if(!f)return;
   var btn=document.querySelector('#ov-notif-new .mbt.re');
-  if(btn)btn.disabled=true;
+  if(btn){btn.disabled=true;setTimeout(function(){btn.disabled=false;},8000);}
   readPhoto(f,function(data){
     var p=document.getElementById('notif-photo-prev');
     if(p){p.src=data;p.style.display='block';}
