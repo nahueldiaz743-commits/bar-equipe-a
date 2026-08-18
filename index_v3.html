@@ -395,6 +395,7 @@ var _caisseType = 'fond', _cSign = 1;
 var editDrinkId = null, newDrinkPhoto = null, editDrinkPhoto = null;
 var notifImgData = null;
 var _drinksCache = null;
+var _drinksFallback = false; // true = getDrinks() a renvoye la liste par defaut faute de donnees locales/cloud confirmees
 var rouePlaying = false;
 var ROUE_COLORS = ['#C0392B','#8B0000','#E74C3C','#922B21','#D35400','#6B0000','#C0392B','#5D0000'];
 
@@ -621,6 +622,7 @@ function startConfigListeners(){
     'DRINKSCONFIG': function(val){
       if(!val)return;
       _drinksCache=val;
+      _drinksFallback=false;
       try{localStorage.setItem('bar_drinks',JSON.stringify(val));}catch(e){
         // localStorage plein — garder en mémoire uniquement
         console.warn('bar_drinks trop lourd pour localStorage');
@@ -1430,6 +1432,7 @@ function startRealtimeSync(){
     'DRINKSCONFIG': function(val){
       if(!val)return;
       _drinksCache=val;
+      _drinksFallback=false;
       localStorage.setItem('bar_drinks',JSON.stringify(val));
       var pBar=document.getElementById('pb');
       if(pBar&&pBar.classList.contains('on'))renderBar();
@@ -1571,7 +1574,7 @@ async function loadCloud(key){
 async function saveAdminsToCloud(list){if(!TEST_MODE)await saveCloud('ADMINSCONFIG',list);}
 async function loadAdminsFromCloud(){try{var d=await loadCloud('ADMINSCONFIG');if(d)localStorage.setItem('ba',JSON.stringify(d));}catch{}}
 async function saveDrinksToCloud(drinks){if(!TEST_MODE)try{await saveCloud('DRINKSCONFIG',drinks);}catch(e){console.warn('saveDrinksToCloud:',e);}}
-async function loadDrinksFromCloud(){try{var d=await loadCloud('DRINKSCONFIG');if(d){_drinksCache=d;localStorage.setItem('bar_drinks',JSON.stringify(d));}}catch{}}
+async function loadDrinksFromCloud(){try{var d=await loadCloud('DRINKSCONFIG');if(d){_drinksCache=d;_drinksFallback=false;localStorage.setItem('bar_drinks',JSON.stringify(d));}}catch{}}
 async function saveCaisseToCloud(c){if(!TEST_MODE)await saveCloud('CAISSECONFIG',c);}
 async function loadCaisseFromCloud(){try{var d=await loadCloud('CAISSECONFIG');if(d)localStorage.setItem('bar_caisse',JSON.stringify(d));}catch{}}
 
@@ -1590,11 +1593,14 @@ function getDrinks(){
       if(dr.stockBar===undefined){dr.stockBar=0;migrated=true;}
     });
     _drinksCache=parsed;
+    _drinksFallback=false;
     // Sauvegarder si migration pour que Firebase soit à jour
     if(migrated){localStorage.setItem('bar_drinks',JSON.stringify(parsed));saveDrinksToCloud(parsed);}
     return _drinksCache;}}catch{}
-  _drinksCache=JSON.parse(JSON.stringify(DEFAULT_DRINKS));
-  return _drinksCache;
+  // Ni cache memoire, ni copie locale, ni confirmation cloud : liste par defaut affichee
+  // SANS la memoriser comme la vraie liste, pour ne jamais risquer de l'ecraser dans le cloud.
+  _drinksFallback=true;
+  return JSON.parse(JSON.stringify(DEFAULT_DRINKS));
 }
 function safeLocalSet(key,val){
   try{localStorage.setItem(key,val);}catch(e){
@@ -1606,7 +1612,13 @@ function safeLocalSet(key,val){
     }
   }
 }
-async function saveDrinks(d){_drinksCache=d;safeLocalSet('bar_drinks',JSON.stringify(d));saveDrinksToCloud(d);}
+async function saveDrinks(d){
+  if(_drinksFallback){
+    if(typeof showToast==='function')showToast('⏳ Chargement des boissons pas termine, reessaie dans quelques secondes');
+    return;
+  }
+  _drinksCache=d;safeLocalSet('bar_drinks',JSON.stringify(d));saveDrinksToCloud(d);
+}
 
 
 function renderBarGardeBanner(){
