@@ -109,7 +109,7 @@ body{height:100%;background:var(--dark);color:var(--txt);font-family:'DM Sans',-
 .bb.d{background:rgba(80,80,80,.1);color:#e74c3c;border:1px solid var(--brd);font-size:.65rem;}
 
 /* FAB RONDS */
-#fab-wrap{position:fixed;bottom:18px;left:0;right:0;z-index:40;display:flex;justify-content:center;align-items:flex-end;gap:14px;pointer-events:none;}
+#fab-wrap{position:fixed;bottom:18px;left:0;right:0;z-index:40;display:none;justify-content:center;align-items:flex-end;gap:14px;pointer-events:none;}
 .fab-btn{pointer-events:all;width:54px;height:54px;border-radius:50%;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;box-shadow:0 4px 18px rgba(0,0,0,.5);transition:transform .12s,box-shadow .12s;background:#1e1e1e;padding:0;overflow:hidden;}
 .fab-btn:active{transform:scale(.92);}
 .fab-btn .fi{font-size:1.4rem;line-height:1;display:block;width:100%;text-align:center;}
@@ -118,7 +118,7 @@ body{height:100%;background:var(--dark);color:var(--txt);font-family:'DM Sans',-
 #FA .fl{color:rgba(255,255,255,.8);}
 #LK{display:none;}
 body.adm #LK{display:flex;}
-.pg-wrap{padding-bottom:86px !important;}
+.pg-wrap{padding-bottom:16px !important;}
 
 /* OVERLAYS */
 .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:flex-end;justify-content:center;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);}
@@ -907,6 +907,8 @@ function TS2(){srt=srt==='name'?'balance':'name';document.getElementById('SL').t
 // ── TABS ──
 function ST(n){
   var adminOnly=['f','k'];if(adminOnly.indexOf(n)>=0&&!adm)return;
+  var _tb=document.getElementById('TB');if(_tb)_tb.style.display='none';
+  var _bb=document.getElementById('back-btn');if(_bb)_bb.style.display='flex';
   var map={'c':'c','p':'p','b':'b','n':'n','r':'r','s':'s2','f':'f','k':'k','h':'h2','e':'e','g':'g','m':'m','loto':'loto','seau':'seau'};
   var tmap={'c':'c','b':'b2','e':'e','p':'p','h':'h','k':'k','s':'s','f':'f','g':'g','n':'n','r':'r','m':'m','loto':'b-loto','seau':'b-seau'};
   Object.keys(map).forEach(function(t){
@@ -987,6 +989,7 @@ function ST(n){
   },50);
 }
 
+  function goHome(){var _tb=document.getElementById('TB');if(_tb)_tb.style.display='';var _bb=document.getElementById('back-btn');if(_bb)_bb.style.display='none';document.querySelectorAll('.pg.on').forEach(function(e){e.classList.remove('on');});document.querySelectorAll('.tb.on').forEach(function(e){e.classList.remove('on');});}Page_Down
 // ── OVERLAYS ──
 
 
@@ -6232,10 +6235,11 @@ function applyBgBottom(url){
   <div id="HS">SPP/SPV La Grande Motte</div>
   <div id="AB">🔓 ADMIN ACTIF</div>
   <div id="SY">⏳ Connexion…</div>
-  <div id="hbg-btn" style="position:absolute;top:8px;right:8px;gap:6px;align-items:center;"><button onclick="openBgPhoto()" style="background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:5px 10px;font-size:.65rem;cursor:pointer;font-family:inherit;">🖼️</button><button onclick="openAppSettings()" style="background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:5px 10px;font-size:.65rem;cursor:pointer;font-family:inherit;">⚙️</button></div>
+  <div id="hbg-btn" style="position:absolute;top:8px;right:8px;gap:6px;align-items:center;"><button onclick="openBgPhoto()" style="background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:5px 10px;font-size:.65rem;cursor:pointer;font-family:inherit;">🖼️</button><button onclick="openAppSettings()" style="background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:5px 10px;font-size:.65rem;cursor:pointer;font-family:inherit;">⚙️</button><button onclick="LA()" title="Verrouiller" style="background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:5px 10px;font-size:.65rem;cursor:pointer;font-family:inherit;">🔒</button></div>
 </div>
+  <div id="back-btn" style="display:none;position:absolute;top:8px;left:8px;" onclick="goHome()"><button style="background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:5px 10px;font-size:.75rem;cursor:pointer;font-family:inherit;">← Menu</button></div>
 <div id="TB">
-  <button class="tb on" onclick="ST('c')" id="tc"><div class="ic" style="background:#9b59b6">👤</div><span>Comptes</span></button>
+  <button class="tb" onclick="ST('c')" id="tc"><div class="ic" style="background:#9b59b6">👤</div><span>Comptes</span></button>
   <button class="tb" onclick="ST('b')" id="tb2"><div class="ic" style="background:#e67e22">🍺</div><span>Bar</span></button>
   <button class="tb" onclick="ST('e')" id="te"><div class="ic" style="background:#27ae60">🍽️</div><span>Repas</span></button>
   <button class="tb" onclick="ST('p')" id="tp"><div class="ic" style="background:#3498db">📊</div><span>Podium</span></button>
@@ -6251,7 +6255,7 @@ function applyBgBottom(url){
 <div class="pg-wrap" id="pages-wrap">
 
 <!-- COMPTES -->
-<div id="pc" class="pg on">
+<div id="pc" class="pg">
   <div id="SM" style="display:none;">
     <div class="pi c"><div class="pv g" id="SC_old">0,00 €</div><div class="pl">Crédits</div></div>
     <div class="pi d"><div class="pv r" id="SD_old">0,00 €</div><div class="pl">Dettes</div></div>
