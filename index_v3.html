@@ -597,7 +597,7 @@ function startMembresListener(){
     var rawVals=Array.isArray(d)?d:Object.values(d);
     var liste=rawVals.filter(function(x){return x&&x.nom;});
     if(!liste.length)return;
-    mem=liste.sort(function(a,b){return(a.nom||'').localeCompare(b.nom||'');}).map(PR);
+    mem=liste.sort(function(a,b){return(a.nom||'').localeCompare(b.nom||'');}).map(PR);if(cu&&!mem.find(function(x){return String(x.id)===String(cu.idx);})){cu=null;try{localStorage.removeItem('cu');}catch(e3){}var L3=document.getElementById('L');if(L3)L3.style.display='flex';var A3=document.getElementById('A');if(A3)A3.style.display='none';if(typeof showToast==='function')showToast('⚠️ Votre compte a été supprimé par un administrateur.');}
     SL();RL();US();
     _checkMonthlyReset();
     localStorage.setItem('bm',JSON.stringify(mem));
