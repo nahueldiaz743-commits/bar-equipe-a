@@ -19,7 +19,7 @@
 :root{--red:#C0392B;--red2:#E74C3C;--dark:#111;--c1:#1a1a1a;--c2:#1f1f1f;--brd:#252525;--grn:#27AE60;--grn2:#2ecc71;--gld:#F39C12;--blu:#3498db;--txt:#efefef;--mut:#555;}
 body{height:100%;background:var(--dark);color:var(--txt);font-family:'DM Sans',-apple-system,sans-serif;overscroll-behavior:none;margin:0;padding:0;}
 #A{display:flex;flex-direction:column;height:100vh;height:100svh;overflow:hidden;background:var(--dark);}
-#TB{flex:0 0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:10px 6px;padding:10px 8px;background:#161616;border-bottom:1px solid var(--brd);}
+#TB{flex:0 0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:18px 10px;padding:20px 10px;background:#161616;border-bottom:1px solid var(--brd);}
 .pg-wrap{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-top:0;}
   
 /* LOGIN */
@@ -45,13 +45,15 @@ body{height:100%;background:var(--dark);color:var(--txt);font-family:'DM Sans',-
 #SY{margin-top:2px;font-size:.56rem;color:rgba(255,255,255,.3);}
 
 /* TABS */
-#TB{flex:0 0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:10px 6px;padding:10px 8px;background:#161616;border-bottom:1px solid var(--brd);}
+#TB{flex:0 0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:18px 10px;padding:20px 10px;background:#161616;border-bottom:1px solid var(--brd);}
+#A:not(:has(.pg.on)) #TB{flex:1 1 auto;align-content:space-evenly;}
+#A:not(:has(.pg.on)) .pg-wrap{flex:0 1 auto;min-height:0;}
   #TB::-webkit-scrollbar{display:none;}
 .tb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:none;border:none;border-radius:14px;padding:6px 2px;cursor:pointer;position:relative;font-family:'DM Sans',sans-serif;}
 .tb.on{background:rgba(231,76,60,.12);}
-  .tb .ic{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 4px 10px rgba(0,0,0,.35);border:2px solid transparent;}
+  .tb .ic{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;box-shadow:0 4px 10px rgba(0,0,0,.35);border:2px solid transparent;}
   .tb.on .ic{border-color:#fff;}
-  .tb span{font-size:.6rem;font-weight:600;color:#ccc;text-align:center;line-height:1.15;}
+  .tb span{font-size:.7rem;font-weight:600;color:#ccc;text-align:center;line-height:1.15;}
   .tb.on span{color:#fff;}
   .pg{display:none;}
   .pg.on{display:block;animation:pgFadeIn .2s ease forwards;}
@@ -3809,9 +3811,6 @@ function removeStockAlertManual(name){
 // REPAS — MODULE COMPLET RÉÉCRIT
 // ============================================================
 function initRepas(){
-  // Renommer onglet
-  var te=document.getElementById('te');
-  if(te)te.textContent='🍽️ Repas';
   // Rendre l'UI initiale
   renderRepasUI();
   // Écouter Firebase temps réel
@@ -6236,7 +6235,7 @@ function applyBgBottom(url){
   <div id="SY">⏳ Connexion…</div>
   <div id="hbg-btn" style="position:absolute;top:8px;right:8px;gap:6px;align-items:center;"><button onclick="openBgPhoto()" style="background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:5px 10px;font-size:.65rem;cursor:pointer;font-family:inherit;">🖼️</button><button onclick="openAppSettings()" style="background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:5px 10px;font-size:.65rem;cursor:pointer;font-family:inherit;">⚙️</button><button onclick="LA()" title="Verrouiller" style="background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:5px 10px;font-size:.65rem;cursor:pointer;font-family:inherit;">🔒</button></div>
 </div>
-  <div id="back-btn" style="display:none;position:absolute;top:8px;left:8px;z-index:95;" onclick="goHome()"><button style="background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:5px 10px;font-size:.75rem;cursor:pointer;font-family:inherit;">← Menu</button></div>
+  <div id="back-btn" style="display:none;position:absolute;top:8px;left:8px;z-index:95;" onclick="goHome()"><button style="background:linear-gradient(135deg,#8B0000,var(--red));border:2px solid rgba(255,255,255,.55);color:#fff;border-radius:12px;padding:7px 14px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 3px 12px rgba(0,0,0,.55);">← Menu</button></div>
 <div id="TB">
   <button class="tb" onclick="ST('c')" id="tc"><div class="ic" style="background:#9b59b6">👤</div><span>Comptes</span></button>
   <button class="tb" onclick="ST('b')" id="tb2"><div class="ic" style="background:#e67e22">🍺</div><span>Bar</span></button>
