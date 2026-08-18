@@ -19,9 +19,9 @@
 :root{--red:#C0392B;--red2:#E74C3C;--dark:#111;--c1:#1a1a1a;--c2:#1f1f1f;--brd:#252525;--grn:#27AE60;--grn2:#2ecc71;--gld:#F39C12;--blu:#3498db;--txt:#efefef;--mut:#555;}
 body{height:100%;background:var(--dark);color:var(--txt);font-family:'DM Sans',-apple-system,sans-serif;overscroll-behavior:none;margin:0;padding:0;}
 #A{display:flex;flex-direction:column;height:100vh;height:100svh;overflow:hidden;background:var(--dark);}
-#TB{flex:0 0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px;background:#161616;border-bottom:1px solid var(--brd);}
+#TB{flex:0 0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:10px 6px;padding:10px 8px;background:#161616;border-bottom:1px solid var(--brd);}
 .pg-wrap{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-top:0;}
-
+  
 /* LOGIN */
 #L{position:fixed;inset:0;background:var(--dark);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;}
 #L img{width:82px;height:82px;border-radius:50%;border:3px solid var(--red);object-fit:cover;margin-bottom:14px;box-shadow:0 0 30px rgba(192,57,43,.4);}
@@ -45,11 +45,15 @@ body{height:100%;background:var(--dark);color:var(--txt);font-family:'DM Sans',-
 #SY{margin-top:2px;font-size:.56rem;color:rgba(255,255,255,.3);}
 
 /* TABS */
-#TB{flex:0 0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px;background:#161616;border-bottom:1px solid var(--brd);}
-#TB::-webkit-scrollbar{display:none;}
-.tb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:var(--c1);border:1px solid var(--brd);border-radius:12px;color:#999;padding:8px 2px;font-size:.6rem;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;text-align:center;white-space:normal;line-height:1.25;}
-.tb.on{color:#fff;border-color:var(--red2);background:rgba(231,76,60,.15);}
-.pg{display:none;}
+#TB{flex:0 0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:10px 6px;padding:10px 8px;background:#161616;border-bottom:1px solid var(--brd);}
+  #TB::-webkit-scrollbar{display:none;}
+.tb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:none;border:none;border-radius:14px;padding:6px 2px;cursor:pointer;position:relative;font-family:'DM Sans',sans-serif;}
+.tb.on{background:rgba(231,76,60,.12);}
+  .tb .ic{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;box-shadow:0 4px 10px rgba(0,0,0,.35);border:2px solid transparent;}
+  .tb.on .ic{border-color:#fff;}
+  .tb span{font-size:.6rem;font-weight:600;color:#ccc;text-align:center;line-height:1.15;}
+  .tb.on span{color:#fff;}
+  .pg{display:none;}
   .pg.on{display:block;animation:pgFadeIn .2s ease forwards;}
 @keyframes pgFadeIn{from{opacity:0;transform:translateX(8px);}to{opacity:1;transform:translateX(0);}}
 
@@ -6231,18 +6235,18 @@ function applyBgBottom(url){
   <div id="hbg-btn" style="position:absolute;top:8px;right:8px;gap:6px;align-items:center;"><button onclick="openBgPhoto()" style="background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:5px 10px;font-size:.65rem;cursor:pointer;font-family:inherit;">🖼️</button><button onclick="openAppSettings()" style="background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:5px 10px;font-size:.65rem;cursor:pointer;font-family:inherit;">⚙️</button></div>
 </div>
 <div id="TB">
-  <button class="tb on" onclick="ST('c')" id="tc">👤 Comptes</button>
-  <button class="tb" onclick="ST('b')" id="tb2">🍺 Bar</button>
-  <button class="tb" onclick="ST('e')" id="te">🍽️ Repas</button>
-  <button class="tb" onclick="ST('p')" id="tp">📊 Podium</button>
-  <button class="tb" onclick="ST('loto')" id="tb-loto">🎰 Loto</button>
-  <button class="tb" onclick="ST('seau')" id="tb-seau">🪣 Seau d'or</button>
-  <button class="tb" onclick="ST('h')" id="th">🛒 Courses</button>
-  <button class="tb" onclick="ST('k')" id="tk" style="display:none;">🧂 Conso</button>
-  <button class="tb" onclick="ST('s')" id="ts" style="display:none;">📦 Stock</button>
-  <button class="tb" onclick="ST('f')" id="tf" style="display:none;">💰 Caisse</button>
-  <button class="tb" onclick="ST('g')" id="tg">💡 Sugg <span id="suggest-badge" style="display:none;background:#e74c3c;color:#fff;border-radius:50%;width:16px;height:16px;font-size:.55rem;font-weight:700;align-items:center;justify-content:center;margin-left:1px;vertical-align:middle;">0</span></button>
-  <button class="tb" onclick="ST('n')" id="tn">🔔 Notifs <span id="notif-badge" style="display:none;background:#e74c3c;color:#fff;border-radius:50%;width:16px;height:16px;font-size:.6rem;font-weight:700;align-items:center;justify-content:center;margin-left:2px;">!</span></button>
+  <button class="tb on" onclick="ST('c')" id="tc"><div class="ic" style="background:#9b59b6">👤</div><span>Comptes</span></button>
+  <button class="tb" onclick="ST('b')" id="tb2"><div class="ic" style="background:#e67e22">🍺</div><span>Bar</span></button>
+  <button class="tb" onclick="ST('e')" id="te"><div class="ic" style="background:#27ae60">🍽️</div><span>Repas</span></button>
+  <button class="tb" onclick="ST('p')" id="tp"><div class="ic" style="background:#3498db">📊</div><span>Podium</span></button>
+  <button class="tb" onclick="ST('loto')" id="tb-loto"><div class="ic" style="background:#e74c3c">🎰</div><span>Loto</span></button>
+  <button class="tb" onclick="ST('seau')" id="tb-seau"><div class="ic" style="background:#f39c12">🪣</div><span>Seau d'or</span></button>
+  <button class="tb" onclick="ST('h')" id="th"><div class="ic" style="background:#16a085">🛒</div><span>Courses</span></button>
+  <button class="tb" onclick="ST('k')" id="tk" style="display:none;"><div class="ic" style="background:#1abc9c">🧂</div><span>Conso</span></button>
+  <button class="tb" onclick="ST('s')" id="ts" style="display:none;"><div class="ic" style="background:#d35400">📦</div><span>Stock</span></button>
+  <button class="tb" onclick="ST('f')" id="tf" style="display:none;"><div class="ic" style="background:#2ecc71">💰</div><span>Caisse</span></button>
+  <button class="tb" onclick="ST('g')" id="tg"><div class="ic" style="background:#f1c40f">💡</div><span>Sugg</span><span id="suggest-badge" style="display:none;position:absolute;top:-2px;right:18%;background:#e74c3c;color:#fff;border-radius:50%;width:16px;height:16px;font-size:.55rem;font-weight:700;align-items:center;justify-content:center;border:2px solid #161616;">0</span></button>
+  <button class="tb" onclick="ST('n')" id="tn"><div class="ic" style="background:#c0392b">🔔</div><span>Notifs</span><span id="notif-badge" style="display:none;position:absolute;top:-2px;right:18%;background:#e74c3c;color:#fff;border-radius:50%;width:16px;height:16px;font-size:.6rem;font-weight:700;align-items:center;justify-content:center;border:2px solid #161616;">!</span></button>
 </div>
 <div class="pg-wrap" id="pages-wrap">
 
