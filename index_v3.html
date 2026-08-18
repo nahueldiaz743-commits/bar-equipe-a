@@ -1201,7 +1201,7 @@ async function confirmDebitCart(){
     }
   });
 
-  if(total===0)return;
+  if(total===0){_debitInProgress=false;if(btn){btn.disabled=false;btn.textContent='✅ Valider';}return;}
   var nb=Math.round((m.balance-total)*100)/100;
   var nh=JSON.stringify(hist);
   if(!TEST_MODE)try{await rtdb.ref('membres/'+_debitMid).update({balance:nb,history:nh});}catch(e){console.warn(e);}
@@ -1939,7 +1939,7 @@ async function saveWero(){
   var photo=prev&&prev.src&&prev.style.display!=='none'?prev.src:'';
   if(!v&&!photo){alert('Entrez une URL ou ajoutez une photo QR');return;}
   if(v)localStorage.setItem('wero_url',v);
-  if(photo)localStorage.setItem('wero_photo',photo);
+  if(photo)safeLocalSet('wero_photo',photo);
   var data={url:v,photo:photo};
   await saveCloud('WEROCONFIG',data);
   CL2('ov-wero');
@@ -2636,7 +2636,7 @@ async function saveBgPhoto(){
   if(!data)return;
   // Compresser avant stockage
   compressPhoto(data,800,400,0.75,function(compressed){
-    localStorage.setItem('header_bg',compressed);
+    safeLocalSet('header_bg',compressed);
     loadBgPhoto();
     if(!TEST_MODE)saveCloud('BGPHOTOCONFIG',compressed);
     CL2('ov-bg');
@@ -2867,7 +2867,7 @@ function handleWeroQR(inp){
   readPhoto(f,function(data){
     document.getElementById('wero-qr-prev').src=data;
     document.getElementById('wero-qr-prev').style.display='block';
-    localStorage.setItem('wero_qr_img',data);
+    safeLocalSet('wero_qr_img',data);
   });
 }
 
