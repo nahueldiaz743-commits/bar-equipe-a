@@ -630,6 +630,13 @@ function startConfigListeners(){
       var pg=document.getElementById('pb');if(pg&&pg.classList.contains('on'))renderBar();
       var ps=document.getElementById('pk');if(ps&&ps.classList.contains('on'))renderStock();
     },
+    'POKERCONFIG': function(val){
+      if(!val)return;
+      _pokerData=val;
+      localStorage.setItem('bar_poker',JSON.stringify(val));
+      var pgk=document.getElementById('ppoker');if(pgk&&pgk.classList.contains('on'))renderPoker();
+      var ppk=document.getElementById('pp');if(ppk&&ppk.classList.contains('on'))POD();
+    },
     'CONSOCONFIG': function(val){
       if(!val)return;
       localStorage.setItem('bar_consos',JSON.stringify(val));
@@ -914,8 +921,8 @@ function ST(n){
   var _tb=document.getElementById('TB');if(_tb)_tb.style.display='none';
   var _bb=document.getElementById('back-btn');if(_bb)_bb.style.display='flex';
   history.pushState({barTab:true},'','');
-  var map={'c':'c','p':'p','b':'b','n':'n','r':'r','s':'s2','f':'f','k':'k','h':'h2','e':'e','g':'g','m':'m','loto':'loto','seau':'seau'};
-  var tmap={'c':'c','b':'b2','e':'e','p':'p','h':'h','k':'k','s':'s','f':'f','g':'g','n':'n','r':'r','m':'m','loto':'b-loto','seau':'b-seau'};
+  var map={'c':'c','p':'p','b':'b','n':'n','r':'r','s':'s2','f':'f','k':'k','h':'h2','e':'e','g':'g','m':'m','loto':'loto','seau':'seau','poker':'poker'};
+  var tmap={'c':'c','b':'b2','e':'e','p':'p','h':'h','k':'k','s':'s','f':'f','g':'g','n':'n','r':'r','m':'m','loto':'b-loto','seau':'b-seau','poker':'b-poker'};
   Object.keys(map).forEach(function(t){
     var pg=document.getElementById('p'+map[t]);
     var tb=document.getElementById('t'+tmap[t]);
@@ -982,6 +989,7 @@ function ST(n){
   }
   if(n==='loto'){getLoto();renderLoto();var pw=document.getElementById('pages-wrap');if(pw)pw.scrollTop=0;}
   if(n==='seau'){setTimeout(function(){renderSeau();},50);}
+  if(n==='poker'){renderPoker();}
   // Scroller la barre d'onglets pour montrer l'onglet actif
   setTimeout(function(){
     var tId=(n==='b'?'tb2':n==='loto'?'tb-loto':'t'+n);
@@ -1440,6 +1448,13 @@ function startRealtimeSync(){
       if(pBar&&pBar.classList.contains('on'))renderBar();
       var pStock=document.getElementById('ps2');
       if(pStock&&pStock.classList.contains('on'))renderStock();
+    },
+    'POKERCONFIG': function(val){
+      if(!val)return;
+      _pokerData=val;
+      localStorage.setItem('bar_poker',JSON.stringify(val));
+      var pgk2=document.getElementById('ppoker');if(pgk2&&pgk2.classList.contains('on'))renderPoker();
+      var ppk2=document.getElementById('pp');if(ppk2&&ppk2.classList.contains('on'))POD();
     },
     'NOTIFSCONFIG': function(val){
       if(!val)return;
@@ -1984,9 +1999,10 @@ function POD(){
       var photoHtml=mObj&&mObj.photo
         ?'<img src="'+mObj.photo+'" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid '+mc[i]+';margin-bottom:4px;">'
         :'<div style="width:44px;height:44px;border-radius:50%;background:'+mc[i]+'22;display:flex;align-items:center;justify-content:center;font-family:Bebas Neue,sans-serif;font-size:1rem;color:'+mc[i]+';border:2px solid '+mc[i]+';margin-bottom:4px;">'+(mObj?IN(mObj):md[i])+'</div>';
-      var valText=podType==='conso'?member.balance+' conso':(member.balance>0?'+':'-')+f(member.balance);
+      var valText=podType==='conso'?member.balance+' conso':podType==='poker'?member.wins+(member.wins>1?' victoires':' victoire'):(member.balance>0?'+':'-')+f(member.balance);
       return'<div class="pc3">'
         +'<div style="display:flex;flex-direction:column;align-items:center;">'
+        +(podType==='poker'&&i===0?'<div style="font-family:Bebas Neue,sans-serif;font-size:.55rem;color:#F39C12;letter-spacing:1px;margin-bottom:2px;">👑 AS D\'OR</div>':'')
         +photoHtml
         +'<div style="font-size:.68rem;font-weight:700;color:#ebebeb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px;text-align:center;">'+member.nom+'</div>'
         +'<div style="font-size:.55rem;color:#666;margin-bottom:3px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;">'+member.pre+'</div>'
@@ -2035,6 +2051,7 @@ function POD(){
   document.getElementById('PC').innerHTML=MK(mem.filter(function(m){return m.balance>0;}).sort(function(a,b){return b.balance-a.balance;}).slice(0,3),'var(--grn2)','credits');
   document.getElementById('PD2').innerHTML=MK(mem.filter(function(m){return m.balance<0;}).sort(function(a,b){return a.balance-b.balance;}).slice(0,3),'#e74c3c','dettes');
   document.getElementById('PC2').innerHTML=MK(conso,'var(--blu)','conso');
+  document.getElementById('PPoker').innerHTML=MK(getPokerRanking().slice(0,3),'#F39C12','poker');
 }
 
 // ── NOTIFICATIONS ──
@@ -5386,9 +5403,108 @@ if('serviceWorker' in navigator){
   });
 }
 
+var _pokerData=null;
+
 // ══════════════════════════════════════════
+// POKER
+// ══════════════════════════════════════════
+function getPoker(){
+  if(!_pokerData){
+    try{var d=localStorage.getItem('bar_poker');if(d)_pokerData=JSON.parse(d);}catch(e){}
+  }
+  if(!_pokerData)_pokerData={historique:[]};
+  return _pokerData;
+}
+function savePoker(){
+  localStorage.setItem('bar_poker',JSON.stringify(_pokerData));
+  if(!TEST_MODE&&rtdb)rtdb.ref('config/POKERCONFIG').set(_pokerData).catch(function(){});
+}
+function getPokerRanking(){
+  var counts={};
+  (getPoker().historique||[]).forEach(function(h){
+    var key=String(h.memberId);
+    if(!counts[key])counts[key]={memberId:h.memberId,nom:h.nom,pre:h.pre,wins:0};
+    counts[key].wins++;
+  });
+  return Object.values(counts).sort(function(a,b){return b.wins-a.wins;});
+}
+function pokerRecordWin(){
+  if(!adm)return;
+  var sel=document.getElementById('poker-winner-select');
+  if(!sel||!sel.value)return;
+  var m=mem.find(function(x){return String(x.id)===String(sel.value);});
+  if(!m)return;
+  getPoker().historique.push({memberId:m.id,nom:m.nom,pre:m.pre,date:TD(),ts:Date.now()});
+  savePoker();
+  renderPoker();
+  var ppEl=document.getElementById('pp');
+  if(ppEl&&ppEl.classList.contains('on'))POD();
+  if(typeof showToast==='function')showToast('🃏 Victoire enregistrée : '+m.pre+' '+m.nom);
+}
+function pokerDeleteEntry(ts){
+  if(!adm)return;
+  if(!confirm('Supprimer cette victoire de l\'historique ?'))return;
+  var data=getPoker();
+  data.historique=(data.historique||[]).filter(function(x){return x.ts!==ts;});
+  savePoker();
+  renderPoker();
+  var ppEl2=document.getElementById('pp');
+  if(ppEl2&&ppEl2.classList.contains('on'))POD();
+}
+function renderPoker(){
+  var el=document.getElementById('poker-content');
+  if(!el)return;
+  if(!_pokerData&&rtdb&&!TEST_MODE){
+    el.innerHTML='<div style="text-align:center;padding:24px;color:#555;font-size:.78rem;">⏳ Chargement...</div>';
+    rtdb.ref('config/POKERCONFIG').once('value',function(snap){var val=snap.val();if(val){_pokerData=val;localStorage.setItem('bar_poker',JSON.stringify(val));}else{_pokerData={historique:[]};}renderPoker();});
+    return;
+  }
+  var data=getPoker();
+  var ranking=getPokerRanking();
+  var h='';
+  if(!ranking.length){
+    h+='<div style="text-align:center;padding:24px;color:#555;font-size:.78rem;">Aucune partie enregistrée pour l\'instant</div>';
+  } else {
+    h+='<div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:14px;padding:14px;margin-bottom:14px;">';
+    ranking.forEach(function(r,i){
+      var isTop=i===0;
+      h+='<div style="display:flex;align-items:center;gap:10px;padding:8px 0;'+(i<ranking.length-1?'border-bottom:1px solid #1e1e1e;':'')+'">'
+        +'<div style="width:26px;text-align:center;font-family:Bebas Neue,sans-serif;font-size:.9rem;color:'+(isTop?'#F39C12':'#666')+';">'+(i+1)+'</div>'
+        +'<div style="flex:1;">'
+          +'<div style="font-size:.82rem;font-weight:700;color:#ebebeb;">'+r.pre+' '+r.nom+(isTop?' <span style="color:#F39C12;font-size:.62rem;letter-spacing:1px;">👑 L\'AS D\'OR</span>':'')+'</div>'
+        +'</div>'
+        +'<div style="font-family:Bebas Neue,sans-serif;font-size:.95rem;color:'+(isTop?'#F39C12':'#ccc')+';">'+r.wins+(r.wins>1?' victoires':' victoire')+'</div>'
+      +'</div>';
+    });
+    h+='</div>';
+  }
+  if(adm){
+    var options=mem.slice().sort(function(a,b){return a.nom.localeCompare(b.nom)||a.pre.localeCompare(b.pre);}).map(function(m){return'<option value="'+m.id+'">'+m.nom+' '+m.pre+'</option>';}).join('');
+    h+='<div style="background:linear-gradient(135deg,rgba(243,156,18,.08),rgba(243,156,18,.03));border:1px solid rgba(243,156,18,.2);border-radius:14px;padding:14px;margin-bottom:14px;">'
+      +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:.8rem;color:#f39c12;letter-spacing:2px;margin-bottom:10px;">⚙️ ENREGISTRER UNE VICTOIRE</div>'
+      +'<select id="poker-winner-select" style="width:100%;background:#1a1a1a;border:1px solid #333;border-radius:10px;color:#fff;padding:11px;font-size:.82rem;margin-bottom:10px;">'+options+'</select>'
+      +'<button onclick="pokerRecordWin()" style="width:100%;padding:12px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(135deg,#f39c12,#e67e22);color:#fff;font-family:\'Bebas Neue\',sans-serif;font-size:.95rem;letter-spacing:2px;">🃏 ENREGISTRER LA VICTOIRE</button>'
+    +'</div>';
+  }
+  var hist=(data.historique||[]).slice().reverse();
+  if(hist.length){
+    h+='<div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:14px;padding:14px;">';
+    h+='<div style="font-family:\'Bebas Neue\',sans-serif;font-size:.85rem;color:#888;letter-spacing:2px;margin-bottom:10px;">📋 HISTORIQUE</div>';
+    hist.slice(0,30).forEach(function(entry){
+      h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #1e1e1e;font-size:.72rem;">'
+        +'<span style="color:#555;">'+entry.date+'</span>'
+        +'<span style="color:#2ecc71;font-weight:700;flex:1;text-align:center;">🏆 '+entry.pre+' '+entry.nom+'</span>'
+        +(adm?'<button onclick="pokerDeleteEntry('+entry.ts+')" style="background:none;border:none;color:#555;cursor:pointer;font-size:.75rem;">🗑</button>':'<span></span>')
+      +'</div>';
+    });
+    h+='</div>';
+  }
+  el.innerHTML=h;
+}
+
+// ══════════════════════════════════════
 // LOTO BAR
-// ══════════════════════════════════════════
+// ══════════════════════════════════════
 var _lotoData={
   participants:{}, // {memberId: {nom,pre,ts}}
   tirage:null,     // {gagnantId,gagnantNom,ts,nbParticipants}
@@ -6258,6 +6374,7 @@ function applyBgBottom(url){
   <button class="tb" onclick="ST('p')" id="tp"><div class="ic" style="background:#3498db">📊</div><span>Podium</span></button>
   <button class="tb" onclick="ST('loto')" id="tb-loto"><div class="ic" style="background:#e74c3c">🎰</div><span>Loto</span></button>
   <button class="tb" onclick="ST('seau')" id="tb-seau"><div class="ic" style="background:#f39c12">🪣</div><span>Seau d'or</span></button>
+  <button class="tb" onclick="ST('poker')" id="tb-poker"><div class="ic" style="background:#8e44ad">🃏</div><span>Poker</span></button>
   <button class="tb" onclick="ST('h')" id="th"><div class="ic" style="background:#16a085">🛒</div><span>Courses</span></button>
   <button class="tb" onclick="ST('k')" id="tk" style="display:none;"><div class="ic" style="background:#1abc9c">🧂</div><span>Conso</span></button>
   <button class="tb" onclick="ST('s')" id="ts" style="display:none;"><div class="ic" style="background:#d35400">📦</div><span>Stock</span></button>
@@ -6294,7 +6411,15 @@ function applyBgBottom(url){
     <div class="ps3"><div style="background:linear-gradient(135deg,#145a32,#27AE60);padding:11px 14px;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:3px;color:#fff;">✅ TOP CRÉDITS</div><div id="PC"></div><div class="pbase"></div></div>
     <div class="ps3"><div style="background:linear-gradient(135deg,#6B0000,#C0392B);padding:11px 14px;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:3px;color:#fff;">❌ TOP DETTES</div><div id="PD2"></div><div class="pbase"></div></div>
     <div class="ps3"><div style="background:linear-gradient(135deg,#1a3a6a,#3498db);padding:11px 14px;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:3px;color:#fff;">🍺 TOP CONSO</div><div id="PC2"></div><div class="pbase"></div></div>
+    <div class="ps3"><div style="background:linear-gradient(135deg,#6e2a8e,#8e44ad);padding:11px 14px;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:3px;color:#fff;">🃏 TOP POKER</div><div id="PPoker"></div><div class="pbase"></div></div>
   </div>
+</div>
+
+<!-- POKER -->
+<div id="ppoker" class="pg">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:3px;margin-bottom:2px;">🃏 POKER</div>
+  <div style="font-size:.65rem;color:#555;letter-spacing:2px;margin-bottom:14px;">CLASSEMENT DES VICTOIRES</div>
+  <div id="poker-content"></div>
 </div>
 
 <!-- BAR -->
