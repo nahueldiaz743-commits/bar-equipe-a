@@ -1078,6 +1078,8 @@ function OED(id){
   if(!m)return;
   _debitMid=id;
   _debitCart={};
+  var cbtn0=document.getElementById('debit-confirm-btn');
+  if(cbtn0){cbtn0.disabled=false;cbtn0.textContent='✅ Valider';}
   var drinks=getDrinks().filter(function(d){
     return d.emoji!=='🍽️'&&!(d.name||'').toLowerCase().includes('repas');
   });
@@ -1233,6 +1235,7 @@ async function confirmDebitCart(){
   SL();CL2('ov-debit');RL();US();
   _debitCart={};
   _debitInProgress=false;
+  if(btn){btn.disabled=false;btn.textContent='✅ Valider';}
   showToast('✅ Commande validée !');
 }
 
@@ -3616,9 +3619,9 @@ async function saveBenefEdit(){
 // ── SWIPE HORIZONTAL ENTRE ONGLETS ──
 var _swipeFromHeader=false;
 (function(){
-  var fullOrder=['c','b','e','p','loto','seau','h','k','s','f','g','n'];
+  var fullOrder=['c','b','e','p','loto','seau','poker','h','k','s','f','g','n'];
   var adminOnlyTabs=['s','f','k'];
-  var tabPageMap={'c':'c','p':'p','b':'b','n':'n','r':'r','s':'s2','f':'f','k':'k','h':'h2','e':'e','g':'g','loto':'loto','seau':'seau'};
+  var tabPageMap={'c':'c','p':'p','b':'b','n':'n','r':'r','s':'s2','f':'f','k':'k','h':'h2','e':'e','g':'g','loto':'loto','seau':'seau','poker':'poker'};
   var sx=null,sy=null,swipeDone=false;
   var SEUIL=22;
 
