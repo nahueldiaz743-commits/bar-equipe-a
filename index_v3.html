@@ -184,6 +184,7 @@ body.adm #LK{display:flex;}
 body.adm #hbg-btn{display:flex;gap:6px;}</style>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script>
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js').then(function(r){
@@ -251,6 +252,7 @@ try{
     appId:"1:8378523286:web:4aa430f70489e331446cb7"
   });
   rtdb = firebase.database();
+  try{firebase.auth().signInAnonymously().catch(function(e){console.warn('Auth anonyme:',e.message);});}catch(e){}
   // Démarrer le listener membres immédiatement
   startMembresListener();
   startConfigListeners();
@@ -272,6 +274,7 @@ try{
           });
         }
         rtdb=firebase.database();
+        try{firebase.auth().signInAnonymously().catch(function(e){console.warn('Auth anonyme:',e.message);});}catch(e){}
         console.log('Firebase initialisé après load');
         // Relancer la sync si connecté
         if(cu)START();
@@ -1356,6 +1359,10 @@ async function CD(){
       alert('Erreur suppression: '+e.message);return;
     }
   }
+  try{
+    var _allPinsDel=getAllPins();
+    if(_allPinsDel[idStr]){delete _allPinsDel[idStr];saveAllPins(_allPinsDel);if(!TEST_MODE)saveCloud('PINSCONFIG',_allPinsDel);}
+  }catch(e){}
   mem=mem.filter(function(m){return String(m.id)!==idStr;});
   dId=null;SL();CL2('ov-del');RL();US();
   updateDropdown(mem.map(function(m){return{id:m.id,nom:m.nom,premon:m.pre};}));
