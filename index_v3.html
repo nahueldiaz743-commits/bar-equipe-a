@@ -640,6 +640,12 @@ function startConfigListeners(){
       var pgk=document.getElementById('ppoker');if(pgk&&pgk.classList.contains('on'))renderPoker();
       var ppk=document.getElementById('pp');if(ppk&&ppk.classList.contains('on'))POD();
     },
+    'GARDESHEETCONFIG': function(val){
+      if(!val)return;
+      _gsData=val;
+      try{localStorage.setItem('bar_gardesheet',JSON.stringify(val));}catch(e){}
+      var pgs=document.getElementById('pgs');if(pgs&&pgs.classList.contains('on'))renderGardeSheet();
+    },
     'CONSOCONFIG': function(val){
       if(!val)return;
       localStorage.setItem('bar_consos',JSON.stringify(val));
@@ -924,8 +930,8 @@ function ST(n){
   var _tb=document.getElementById('TB');if(_tb)_tb.style.display='none';
   var _bb=document.getElementById('back-btn');if(_bb)_bb.style.display='flex';
   history.pushState({barTab:true},'','');
-  var map={'c':'c','p':'p','b':'b','n':'n','r':'r','s':'s2','f':'f','k':'k','h':'h2','e':'e','g':'g','m':'m','loto':'loto','seau':'seau','poker':'poker'};
-  var tmap={'c':'c','b':'b2','e':'e','p':'p','h':'h','k':'k','s':'s','f':'f','g':'g','n':'n','r':'r','m':'m','loto':'b-loto','seau':'b-seau','poker':'b-poker'};
+  var map={'c':'c','p':'p','b':'b','n':'n','r':'r','s':'s2','f':'f','k':'k','h':'h2','e':'e','g':'g','m':'m','loto':'loto','seau':'seau','poker':'poker','gs':'gs'};
+  var tmap={'c':'c','b':'b2','e':'e','p':'p','h':'h','k':'k','s':'s','f':'f','g':'g','n':'n','r':'r','m':'m','loto':'b-loto','seau':'b-seau','poker':'b-poker','gs':'b-gs'};
   Object.keys(map).forEach(function(t){
     var pg=document.getElementById('p'+map[t]);
     var tb=document.getElementById('t'+tmap[t]);
@@ -993,6 +999,7 @@ function ST(n){
   if(n==='loto'){getLoto();renderLoto();var pw=document.getElementById('pages-wrap');if(pw)pw.scrollTop=0;}
   if(n==='seau'){setTimeout(function(){renderSeau();},50);}
   if(n==='poker'){renderPoker();}
+  if(n==='gs'){renderGardeSheet();}
   // Scroller la barre d'onglets pour montrer l'onglet actif
   setTimeout(function(){
     var tId=(n==='b'?'tb2':n==='loto'?'tb-loto':'t'+n);
@@ -1461,6 +1468,12 @@ function startRealtimeSync(){
       localStorage.setItem('bar_poker',JSON.stringify(val));
       var pgk2=document.getElementById('ppoker');if(pgk2&&pgk2.classList.contains('on'))renderPoker();
       var ppk2=document.getElementById('pp');if(ppk2&&ppk2.classList.contains('on'))POD();
+    },
+    'GARDESHEETCONFIG': function(val){
+      if(!val)return;
+      _gsData=val;
+      try{localStorage.setItem('bar_gardesheet',JSON.stringify(val));}catch(e){}
+      var pgs2=document.getElementById('pgs');if(pgs2&&pgs2.classList.contains('on'))renderGardeSheet();
     },
     'NOTIFSCONFIG': function(val){
       if(!val)return;
@@ -3619,9 +3632,9 @@ async function saveBenefEdit(){
 // ── SWIPE HORIZONTAL ENTRE ONGLETS ──
 var _swipeFromHeader=false;
 (function(){
-  var fullOrder=['c','b','e','p','loto','seau','poker','h','k','s','f','g','n'];
+  var fullOrder=['c','b','e','gs','p','loto','seau','poker','h','k','s','f','g','n'];
   var adminOnlyTabs=['s','f','k'];
-  var tabPageMap={'c':'c','p':'p','b':'b','n':'n','r':'r','s':'s2','f':'f','k':'k','h':'h2','e':'e','g':'g','loto':'loto','seau':'seau','poker':'poker'};
+  var tabPageMap={'c':'c','p':'p','b':'b','n':'n','r':'r','s':'s2','f':'f','k':'k','h':'h2','e':'e','g':'g','loto':'loto','seau':'seau','poker':'poker','gs':'gs'};
   var sx=null,sy=null,swipeDone=false;
   var SEUIL=22;
 
@@ -5566,6 +5579,103 @@ function isJourDeGarde(){return getGardeActive().isGarde;}
 
 function lotoProchainGarde(){return getGardeActive().joursAvantProchaine;}
 
+// ══════════════════════════════════════════
+// FEUILLES DE GARDE (jour / nuit)
+// ══════════════════════════════════════════
+var _gsData=null;
+function getGSTargetDate(){
+  var ga=getGardeActive();
+  var d=ga.isGarde?ga.gardeDate:ga.prochainGardeDate;
+  if(!d)return null;
+  var dt=new Date(d);
+  return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+}
+function formatGSDate(iso){
+  if(!iso)return'';
+  var p=iso.split('-');
+  var dt=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));
+  var s=dt.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  return s.charAt(0).toUpperCase()+s.slice(1);
+}
+function getGS(){
+  if(!_gsData){
+    try{var d=localStorage.getItem('bar_gardesheet');if(d)_gsData=JSON.parse(d);}catch(e){}
+  }
+  if(!_gsData)_gsData={gardeDate:null,jour:null,nuit:null};
+  var target=getGSTargetDate();
+  if(target&&_gsData.gardeDate&&_gsData.gardeDate!==target){
+    _gsData={gardeDate:target,jour:null,nuit:null};
+    saveGS();
+  }else if(target&&!_gsData.gardeDate){
+    _gsData.gardeDate=target;
+  }
+  return _gsData;
+}
+function saveGS(){
+  try{localStorage.setItem('bar_gardesheet',JSON.stringify(_gsData));}catch(e){}
+  if(!TEST_MODE&&rtdb)rtdb.ref('config/GARDESHEETCONFIG').set(_gsData).catch(function(){});
+}
+function gsUploadPhoto(input,slot){
+  var f=input.files[0];if(!f)return;
+  readPhoto(f,function(data){
+    var d=getGS();
+    d[slot]={photo:data,by:(cu?(cu.pre+' '+cu.nom):'?'),ts:Date.now()};
+    saveGS();
+    renderGardeSheet();
+  });
+}
+function gsDeletePhoto(slot){
+  if(!adm)return;
+  if(!confirm('Supprimer cette feuille de garde ?'))return;
+  var d=getGS();
+  d[slot]=null;
+  saveGS();
+  renderGardeSheet();
+}
+function _gsSlotHtml(d,slot,title,emoji){
+  var s=d[slot];
+  if(s&&s.photo){
+    return '<div style="margin-bottom:18px;">'
+      +'<div style="font-weight:700;font-size:.82rem;color:#ebebeb;margin-bottom:6px;">'+emoji+' '+title+'</div>'
+      +'<img src="'+s.photo+'" style="width:100%;border-radius:12px;border:1px solid var(--brd);display:block;">'
+      +'<div style="font-size:.62rem;color:#555;margin-top:4px;">Ajoutée par '+(s.by||'?')+'</div>'
+      +'<div style="display:flex;gap:8px;margin-top:8px;">'
+      +'<label style="flex:1;text-align:center;background:#222;color:#888;border:1px solid #333;border-radius:10px;padding:9px;font-size:.75rem;cursor:pointer;">🔄 Remplacer<input type="file" accept="image/*" style="display:none;" onchange="gsUploadPhoto(this,\''+slot+'\')"></label>'
+      +(adm?'<button onclick="gsDeletePhoto(\''+slot+'\')" style="background:#2a1a1a;color:#e74c3c;border:1px solid #5a2a2a;border-radius:10px;padding:9px 14px;font-size:.75rem;cursor:pointer;">🗑️</button>':'')
+      +'</div></div>';
+  }
+  return '<div style="margin-bottom:18px;">'
+    +'<div style="font-weight:700;font-size:.82rem;color:#ebebeb;margin-bottom:6px;">'+emoji+' '+title+'</div>'
+    +'<label style="display:block;text-align:center;background:var(--c2);border:2px dashed var(--brd);border-radius:12px;padding:30px 10px;cursor:pointer;color:#555;font-size:.78rem;">'
+    +'📷 Ajouter la photo<input type="file" accept="image/*" style="display:none;" onchange="gsUploadPhoto(this,\''+slot+'\')"></label>'
+    +'</div>';
+}
+function renderGardeSheet(){
+  var el=document.getElementById('gs-content');
+  if(!el)return;
+  if(!_gsData&&rtdb&&!TEST_MODE){
+    el.innerHTML='<div style="text-align:center;padding:24px;color:#555;font-size:.78rem;">⏳ Chargement...</div>';
+    rtdb.ref('config/GARDESHEETCONFIG').once('value',function(snap){
+      var val=snap.val();
+      if(val){_gsData=val;try{localStorage.setItem('bar_gardesheet',JSON.stringify(val));}catch(e){}}
+      else{_gsData={gardeDate:null,jour:null,nuit:null};}
+      renderGardeSheet();
+    });
+    return;
+  }
+  var d=getGS();
+  var target=getGSTargetDate();
+  if(!target){
+    el.innerHTML='<div style="text-align:center;padding:24px;color:#555;font-size:.78rem;">Aucun cycle de garde configuré.</div>';
+    return;
+  }
+  var ga=getGardeActive();
+  var label=(ga.isGarde?'🟢 Garde en cours — ':'⏳ Prochaine garde — ')+formatGSDate(target);
+  el.innerHTML='<div style="font-size:.72rem;color:var(--gld);letter-spacing:1px;margin-bottom:16px;text-transform:uppercase;">'+label+'</div>'
+    +_gsSlotHtml(d,'jour','Feuille de garde JOUR','☀️')
+    +_gsSlotHtml(d,'nuit','Feuille de garde NUIT','🌙');
+}
+
 function renderLoto(){
   getLoto();
   if(_shouldResetLoto()){
@@ -6377,6 +6487,7 @@ function applyBgBottom(url){
   <button class="tb" onclick="ST('c')" id="tc"><div class="ic" style="background:#9b59b6">👤</div><span>Comptes</span></button>
   <button class="tb" onclick="ST('b')" id="tb2"><div class="ic" style="background:#e67e22">🍺</div><span>Bar</span></button>
   <button class="tb" onclick="ST('e')" id="te"><div class="ic" style="background:#27ae60">🍽️</div><span>Repas</span></button>
+  <button class="tb" onclick="ST('gs')" id="tb-gs"><div class="ic" style="background:#34495e">📋</div><span>Garde</span></button>
   <button class="tb" onclick="ST('p')" id="tp"><div class="ic" style="background:#3498db">📊</div><span>Podium</span></button>
   <button class="tb" onclick="ST('loto')" id="tb-loto"><div class="ic" style="background:#e74c3c">🎰</div><span>Loto</span></button>
   <button class="tb" onclick="ST('seau')" id="tb-seau"><div class="ic" style="background:#f39c12">🪣</div><span>Seau d'or</span></button>
@@ -6422,6 +6533,12 @@ function applyBgBottom(url){
 </div>
 
 <!-- POKER -->
+<div id="pgs" class="pg">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:3px;margin-bottom:2px;">📋 FEUILLES DE GARDE</div>
+  <div style="font-size:.65rem;color:#555;letter-spacing:2px;margin-bottom:14px;">JOUR ET NUIT — VALABLE POUR LA GARDE EN COURS</div>
+  <div id="gs-content"></div>
+</div>
+
 <div id="ppoker" class="pg">
   <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:3px;margin-bottom:2px;">🃏 POKER</div>
   <div style="font-size:.65rem;color:#555;letter-spacing:2px;margin-bottom:14px;">CLASSEMENT DES VICTOIRES</div>
