@@ -649,6 +649,12 @@ function startConfigListeners(){
       try{localStorage.setItem('bar_gardesheet',JSON.stringify(val));}catch(e){}
       var pgs=document.getElementById('pgs');if(pgs&&pgs.classList.contains('on'))renderGardeSheet();
     },
+    'HISTORYLOG': function(val){
+      if(!val)return;
+      _histLog=val;
+      try{localStorage.setItem('bar_histlog',JSON.stringify(val));}catch(e){}
+      var ph=document.getElementById('phist');if(ph&&ph.classList.contains('on'))renderHistory();
+    },
     'CONSOCONFIG': function(val){
       if(!val)return;
       localStorage.setItem('bar_consos',JSON.stringify(val));
@@ -929,12 +935,12 @@ function TS2(){srt=srt==='name'?'balance':'name';document.getElementById('SL').t
 
 // ── TABS ──
 function ST(n){
-  var adminOnly=['f','k'];if(adminOnly.indexOf(n)>=0&&!adm)return;
+  var adminOnly=['f','k','hist'];if(adminOnly.indexOf(n)>=0&&!adm)return;
   var _tb=document.getElementById('TB');if(_tb)_tb.style.display='none';
   var _bb=document.getElementById('back-btn');if(_bb)_bb.style.display='flex';
   history.pushState({barTab:true},'','');
-  var map={'c':'c','p':'p','b':'b','n':'n','r':'r','s':'s2','f':'f','k':'k','h':'h2','e':'e','g':'g','m':'m','loto':'loto','seau':'seau','poker':'poker','gs':'gs'};
-  var tmap={'c':'c','b':'b2','e':'e','p':'p','h':'h','k':'k','s':'s','f':'f','g':'g','n':'n','r':'r','m':'m','loto':'b-loto','seau':'b-seau','poker':'b-poker','gs':'b-gs'};
+  var map={'c':'c','p':'p','b':'b','n':'n','r':'r','s':'s2','f':'f','k':'k','h':'h2','e':'e','g':'g','m':'m','loto':'loto','seau':'seau','poker':'poker','gs':'gs','hist':'hist'};
+  var tmap={'c':'c','b':'b2','e':'e','p':'p','h':'h','k':'k','s':'s','f':'f','g':'g','n':'n','r':'r','m':'m','loto':'b-loto','seau':'b-seau','poker':'b-poker','gs':'b-gs','hist':'b-hist'};
   Object.keys(map).forEach(function(t){
     var pg=document.getElementById('p'+map[t]);
     var tb=document.getElementById('t'+tmap[t]);
@@ -1003,6 +1009,7 @@ function ST(n){
   if(n==='seau'){setTimeout(function(){renderSeau();},50);}
   if(n==='poker'){renderPoker();}
   if(n==='gs'){renderGardeSheet();}
+  if(n==='hist'){renderHistory();}
   // Scroller la barre d'onglets pour montrer l'onglet actif
   setTimeout(function(){
     var tId=(n==='b'?'tb2':n==='loto'?'tb-loto':'t'+n);
@@ -1039,6 +1046,7 @@ async function CE(){
   if(isNaN(v))return;
   var note=document.getElementById('EN').value.trim();
   var m=mem.find(function(x){return x.id==eId;});
+  var _histBeforeCE=m?m.balance:0;
   var nb,delta;
   if(eAct==='balance'){
     delta=Math.round((v-m.balance)*100)/100;
@@ -1051,6 +1059,7 @@ async function CE(){
   var nh=JSON.stringify((m.history||[]).concat([{date:TD(),delta:delta,note:note||'Modification'}]));
   if(!TEST_MODE)try{await rtdb.ref('membres/'+eId).update({balance:nb,history:nh});}catch(e){console.warn(e);}
   m.balance=nb;m.history=JSON.parse(nh);SL();CL2('ov-e');RL();US();
+  logHist('Comptes',m.pre+' '+m.nom+' — Modification solde ('+(note||'Modification')+') : '+_hM(_histBeforeCE)+' → '+_hM(nb));
   // Si versement d'argent (delta positif) → fond de caisse, quel que soit le mode
   if(delta>0){
     var caisse=getCaisse();
@@ -1065,10 +1074,12 @@ async function OEC(id){
   if(!adm){OP2('ov-p');return;}
   var m=mem.find(function(x){return x.id==id;});
   if(!m)return;
+  var _histBeforeOEC=m.balance;
   var nb=Math.round((m.balance+1)*100)/100;
   var nh=JSON.stringify((m.history||[]).concat([{date:TD(),delta:1,note:'+ 1€'}]));
   if(!TEST_MODE)try{await rtdb.ref('membres/'+id).update({balance:nb,history:nh});}catch(e){console.warn(e);}
   m.balance=nb;m.history=JSON.parse(nh);SL();RL();US();
+  logHist('Comptes',m.pre+' '+m.nom+' — Versement rapide +1€ : '+_hM(_histBeforeOEC)+' → '+_hM(nb));
   // Quick +1 → fond de caisse
   var caisse=getCaisse();if(!caisse.fond)caisse.fond=[];
   caisse.fond.push({date:TD(),delta:1,note:'Versement +1€ de '+m.pre+' '+m.nom});
@@ -1237,10 +1248,12 @@ async function confirmDebitCart(){
   });
 
   if(total===0){_debitInProgress=false;if(btn){btn.disabled=false;btn.textContent='✅ Valider';}return;}
+  var _histBeforeDebit=m.balance;
   var nb=Math.round((m.balance-total)*100)/100;
   var nh=JSON.stringify(hist);
   if(!TEST_MODE)try{await rtdb.ref('membres/'+_debitMid).update({balance:nb,history:nh});}catch(e){console.warn(e);}
   m.balance=nb;m.history=hist;
+  logHist('Comptes',m.pre+' '+m.nom+' — Debit bar ('+total.toFixed(2).replace('.',',')+' €) : '+_hM(_histBeforeDebit)+' → '+_hM(nb));
   if(drinksUpdated){saveDrinks(drinks);renderStock();}
   SL();CL2('ov-debit');RL();US();
   _debitCart={};
@@ -1260,10 +1273,12 @@ async function confirmDette(){
   var amount=parseFloat(document.getElementById('dette-amt').value.replace(',','.'));
   var note=document.getElementById('dette-note').value.trim()||'Dette bar';
   if(!m||isNaN(amount)||amount<=0)return;
+  var _histBeforeDette=m.balance;
   var nb=Math.round((m.balance-amount)*100)/100;
   var nh=JSON.stringify((m.history||[]).concat([{date:TD(),delta:-amount,note:'💸 '+note}]));
   if(!TEST_MODE)try{await rtdb.ref('membres/'+_debitMid).update({balance:nb,history:nh});}catch(e){console.warn(e);}
   m.balance=nb;m.history=JSON.parse(nh);SL();CL2('ov-dette');RL();US();
+  logHist('Comptes',m.pre+' '+m.nom+' — Dette ('+note+') : '+_hM(_histBeforeDette)+' → '+_hM(nb));
 }
 
 // ── HISTORIQUE ──
@@ -1327,6 +1342,7 @@ async function AM(){
   document.getElementById('AP').value='';
   document.getElementById('AS').value='';
   CL2('ov-add');RL();US();
+  logHist('Membres',pre+' '+nom+' — Nouveau membre ajoute (solde initial : '+_hM(sol)+')');
 }
 
 function OD(id){if(!adm){OP2('ov-p');return;}dId=(id!==undefined&&id!==null)?id:null;var m=mem.find(function(x){return x.id==id;});document.getElementById('DS').innerHTML='Supprimer <strong>'+m.nom+' '+m.pre+'</strong> ?';OP2('ov-del');}
@@ -1363,6 +1379,8 @@ async function CD(){
     var _allPinsDel=getAllPins();
     if(_allPinsDel[idStr]){delete _allPinsDel[idStr];saveAllPins(_allPinsDel);if(!TEST_MODE)saveCloud('PINSCONFIG',_allPinsDel);}
   }catch(e){}
+  var _histDelMember=mem.find(function(x){return String(x.id)===idStr;});
+  if(_histDelMember)logHist('Membres',_histDelMember.pre+' '+_histDelMember.nom+' — Membre supprime');
   mem=mem.filter(function(m){return String(m.id)!==idStr;});
   dId=null;SL();CL2('ov-del');RL();US();
   updateDropdown(mem.map(function(m){return{id:m.id,nom:m.nom,premon:m.pre};}));
@@ -1425,6 +1443,7 @@ var cabtn=document.getElementById('conso-add-btn');if(cabtn)cabtn.style.display=
   var btb=document.getElementById('bar-tournee-btn');if(btb)btb.style.display=on?'block':'none';
   // Onglet conso admin-only
   var tk=document.getElementById('tk');if(tk)tk.style.display=on?'flex':'none';
+  var thist=document.getElementById('tb-hist');if(thist)thist.style.display=on?'flex':'none';
   if(!on){var tc2=document.getElementById('today-conso');if(tc2)tc2.style.display='none';}
   renderCadenasCode();
   RL();
@@ -1481,6 +1500,12 @@ function startRealtimeSync(){
       _gsData=val;
       try{localStorage.setItem('bar_gardesheet',JSON.stringify(val));}catch(e){}
       var pgs2=document.getElementById('pgs');if(pgs2&&pgs2.classList.contains('on'))renderGardeSheet();
+    },
+    'HISTORYLOG': function(val){
+      if(!val)return;
+      _histLog=val;
+      try{localStorage.setItem('bar_histlog',JSON.stringify(val));}catch(e){}
+      var ph2=document.getElementById('phist');if(ph2&&ph2.classList.contains('on'))renderHistory();
     },
     'NOTIFSCONFIG': function(val){
       if(!val)return;
@@ -1876,6 +1901,7 @@ async function saveDrink(){
   var mx=drinks.reduce(function(m,d){return d.id>m?d.id:m;},0);
   drinks.push({id:mx+1,name:name,emoji:emoji,price:1,stock:stock,cost:cost,photo:newDrinkPhoto||null});
   newDrinkPhoto=null;saveDrinks(drinks);CL2('ov-add-drink');renderBar();renderStock();
+  logHist('Bar',emoji+' '+name+' — Nouvelle boisson ajoutee (stock initial : '+stock+')');
 }
 
 function editDrink(id){
@@ -1900,8 +1926,10 @@ async function saveEditDrink(){
   if(!name)return;
   var drinks=getDrinks();
   var d=drinks.find(function(x){return x.id==editDrinkId;});
+  var _histOldPrice=d?d.price:null;
   if(d){d.name=name;if(emoji)d.emoji=emoji;d.price=price;d.cost=cost;if(editDrinkPhoto)d.photo=editDrinkPhoto;}
   editDrinkPhoto=null;saveDrinks(drinks);CL2('ov-edit-drink');renderBar();renderStock();
+  if(d)logHist('Bar',(emoji||d.emoji)+' '+name+' — Modifiee'+(_histOldPrice!==null&&_histOldPrice!==price?' (prix : '+_hM(_histOldPrice)+' → '+_hM(price)+')':''));
 }
 
 // ── STOCK ──
@@ -1940,8 +1968,8 @@ function renderStock(){
       +'</div>';
   }).join('');
 }
-function adjStock(id,delta){var d=getDrinks();var dr=d.find(function(x){return x.id==id;});if(!dr)return;var cur=dr.stockReserve!==undefined?dr.stockReserve:dr.stock;if(cur===-1)return;cur=Math.max(0,cur+delta);dr.stockReserve=cur;dr.stock=cur;saveDrinks(d);renderStock();}
-function delDrink(id){var d=getDrinks().filter(function(x){return x.id!=id;});saveDrinks(d);renderBar();renderStock();}
+function adjStock(id,delta){var d=getDrinks();var dr=d.find(function(x){return x.id==id;});if(!dr)return;var cur=dr.stockReserve!==undefined?dr.stockReserve:dr.stock;if(cur===-1)return;var _histOldStock=cur;cur=Math.max(0,cur+delta);dr.stockReserve=cur;dr.stock=cur;saveDrinks(d);renderStock();logHist('Stock',(dr.emoji||'')+' '+dr.name+' — Stock : '+_histOldStock+' → '+cur);}
+function delDrink(id){var dAll=getDrinks();var _histDelDrink=dAll.find(function(x){return x.id==id;});var d=dAll.filter(function(x){return x.id!=id;});saveDrinks(d);renderBar();renderStock();if(_histDelDrink)logHist('Bar',(_histDelDrink.emoji||'')+' '+_histDelDrink.name+' — Boisson supprimee');}
 function checkAlerts(){
   var drinks=getDrinks();
   var low=drinks.filter(function(d){return d.stock!==-1&&d.stock<=3;});
@@ -2161,6 +2189,7 @@ async function saveNotif(){
   // notifImgData est déjà compressé par readPhoto()
   notifs.push({type:type,title:title,body:body,img:notifImgData||null,date:TD(),ts:ts,author:cu?cu.pre+' '+cu.nom:'Admin'});
   await saveNotifs(notifs);
+  logHist('Notifs','Publiee : '+title);
   if(!TEST_MODE)saveCloud('LASTNOTIFTS',{ts:ts});
   notifImgData=null;
   CL2('ov-notif-new');
@@ -2182,6 +2211,7 @@ function prevNotifImg(inp){
 }
 async function delNotif(id){
   var notifs=getNotifs();
+  var _histNotif=notifs.find(function(n){return String(n.ts)===String(id)||String(n.id)===String(id);});
   // Supprimer par ts/id unique
   var result=notifs.filter(function(n){return String(n.ts)!==String(id)&&String(n.id)!==String(id);});
   if(result.length===notifs.length){
@@ -2192,6 +2222,7 @@ async function delNotif(id){
   }
   await saveNotifs(result);
   renderNotifs();
+  logHist('Notifs','Supprimee'+(_histNotif?' : '+_histNotif.title:''));
 }
 
 // ── MACHINE À SOUS ──
@@ -2493,8 +2524,10 @@ async function saveCaisseOp(){
   if(isNaN(amount)||amount<=0)return;
   var c=getCaisse();
   if(!c[_caisseType])c[_caisseType]=[];
-  c[_caisseType].push({date:TD(),delta:Math.round(_cSign*amount*100)/100,note:note});
+  var _histCaisseDelta=Math.round(_cSign*amount*100)/100;
+  c[_caisseType].push({date:TD(),delta:_histCaisseDelta,note:note});
   saveCaisse(c);CL2('ov-caisse-op');renderCaisse();
+  logHist('Caisse',(_caisseType==='fond'?'Fond de caisse':'Compte bancaire')+' — '+(_histCaisseDelta>=0?'+':'')+_hM(_histCaisseDelta)+' ('+note+')');
 }
 
 // ── MESSAGE ──
@@ -2643,6 +2676,7 @@ async function saveSuggestion(){
   var ts=Date.now();
   suggests.push({type:type,title:title,body:body,photos:_suggestPhotos.slice(),date:TD(),author:cu?cu.pre+' '+cu.nom:'Anonyme',ts:ts});
   await saveSuggestions(suggests);
+  logHist('Sugg','Nouvelle suggestion : '+title);
   _suggestPhotos=[];
   CL2('ov-suggest');
   renderSuggestions();
@@ -2652,6 +2686,7 @@ async function saveSuggestion(){
 async function deleteSuggest(id){
   if(!confirm('Supprimer cette suggestion ?'))return;
   var suggests=getSuggestions();
+  var _histSugg=suggests.find(function(s){return String(s.id)===String(id);});
   var result=suggests.filter(function(s){return String(s.id)!==String(id);});
   if(result.length===suggests.length){
     // Fallback index inversé
@@ -2661,6 +2696,7 @@ async function deleteSuggest(id){
   }
   await saveSuggestions(result);
   renderSuggestions();
+  logHist('Sugg','Suggestion supprimee'+(_histSugg?' : '+_histSugg.title:''));
 }
 
 function validateSuggest(idx){
@@ -3535,6 +3571,7 @@ async function addCoursesItem(){
   saveCourses(data);
   inp.value='';
   renderCourses();
+  logHist('Courses','Ajoute : '+text);
 }
 
 function toggleCourseItem(idx,checked){
@@ -3546,9 +3583,11 @@ function toggleCourseItem(idx,checked){
 
 function delCourseItem(idx){
   var data=getCourses();
+  var _histItem=data.items&&data.items[idx]?data.items[idx].text:null;
   data.items.splice(idx,1);
   saveCourses(data);
   renderCourses();
+  if(_histItem)logHist('Courses','Retire : '+_histItem);
 }
 
 function addCoursesQR(){
@@ -3639,9 +3678,9 @@ async function saveBenefEdit(){
 // ── SWIPE HORIZONTAL ENTRE ONGLETS ──
 var _swipeFromHeader=false;
 (function(){
-  var fullOrder=['c','b','e','gs','p','loto','seau','poker','h','k','s','f','g','n'];
-  var adminOnlyTabs=['s','f','k'];
-  var tabPageMap={'c':'c','p':'p','b':'b','n':'n','r':'r','s':'s2','f':'f','k':'k','h':'h2','e':'e','g':'g','loto':'loto','seau':'seau','poker':'poker','gs':'gs'};
+  var fullOrder=['c','b','e','gs','p','loto','seau','poker','h','k','s','f','g','n','hist'];
+  var adminOnlyTabs=['s','f','k','hist'];
+  var tabPageMap={'c':'c','p':'p','b':'b','n':'n','r':'r','s':'s2','f':'f','k':'k','h':'h2','e':'e','g':'g','loto':'loto','seau':'seau','poker':'poker','gs':'gs','hist':'hist'};
   var sx=null,sy=null,swipeDone=false;
   var SEUIL=22;
 
@@ -5466,16 +5505,19 @@ function pokerRecordWin(){
   var ppEl=document.getElementById('pp');
   if(ppEl&&ppEl.classList.contains('on'))POD();
   if(typeof showToast==='function')showToast('🃏 Victoire enregistrée : '+m.pre+' '+m.nom);
+  logHist('Poker','Victoire enregistree pour '+m.pre+' '+m.nom);
 }
 function pokerDeleteEntry(ts){
   if(!adm)return;
   if(!confirm('Supprimer cette victoire de l\'historique ?'))return;
   var data=getPoker();
+  var _histPokerEntry=(data.historique||[]).find(function(x){return x.ts===ts;});
   data.historique=(data.historique||[]).filter(function(x){return x.ts!==ts;});
   savePoker();
   renderPoker();
   var ppEl2=document.getElementById('pp');
   if(ppEl2&&ppEl2.classList.contains('on'))POD();
+  logHist('Poker','Victoire supprimee'+(_histPokerEntry?' : '+_histPokerEntry.pre+' '+_histPokerEntry.nom:''));
 }
 function renderPoker(){
   var el=document.getElementById('poker-content');
@@ -5629,6 +5671,7 @@ function gsUploadPhoto(input,slot){
     d[slot]={photo:data,by:(cu?(cu.pre+' '+cu.nom):'?'),ts:Date.now()};
     saveGS();
     renderGardeSheet();
+    logHist('Garde','Feuille '+(slot==='jour'?'JOUR':'NUIT')+' ajoutee par '+(cu?(cu.pre+' '+cu.nom):'?'));
   });
 }
 function gsDeletePhoto(slot){
@@ -5638,6 +5681,7 @@ function gsDeletePhoto(slot){
   d[slot]=null;
   saveGS();
   renderGardeSheet();
+  logHist('Garde','Feuille '+(slot==='jour'?'JOUR':'NUIT')+' supprimee manuellement');
 }
 function _gsSlotHtml(d,slot,title,emoji){
   var s=d[slot];
@@ -5681,6 +5725,72 @@ function renderGardeSheet(){
   el.innerHTML='<div style="font-size:.72rem;color:var(--gld);letter-spacing:1px;margin-bottom:16px;text-transform:uppercase;">'+label+'</div>'
     +_gsSlotHtml(d,'jour','Feuille de garde JOUR','☀️')
     +_gsSlotHtml(d,'nuit','Feuille de garde NUIT','🌙');
+}
+
+// ════════════════════════════════════════════
+// HISTORIQUE (admin, 72h glissantes)
+// ════════════════════════════════════════════
+var _histLog=null;
+function getHist(){
+  if(!_histLog){
+    try{var d=localStorage.getItem('bar_histlog');if(d)_histLog=JSON.parse(d);}catch(e){}
+  }
+  if(!_histLog)_histLog=[];
+  return _histLog;
+}
+function _hM(v){v=v||0;return(v<0?'-':'')+Math.abs(v).toFixed(2).replace('.',',')+' €';}
+function pruneHist(){
+  var cutoff=Date.now()-72*3600*1000;
+  _histLog=getHist().filter(function(h){return h.ts>=cutoff;});
+}
+function saveHist(){
+  pruneHist();
+  try{localStorage.setItem('bar_histlog',JSON.stringify(_histLog));}catch(e){}
+  if(!TEST_MODE&&rtdb)rtdb.ref('config/HISTORYLOG').set(_histLog).catch(function(){});
+}
+function logHist(cat,msg){
+  try{
+    getHist().push({ts:Date.now(),cat:cat,msg:msg});
+    saveHist();
+    var ph=document.getElementById('phist');
+    if(ph&&ph.classList.contains('on'))renderHistory();
+  }catch(e){console.warn('logHist:',e);}
+}
+function resetHistory(){
+  if(!adm)return;
+  if(!confirm('Effacer tout l\'historique des 72 dernieres heures ? Cette action est irreversible.'))return;
+  _histLog=[];
+  saveHist();
+  renderHistory();
+}
+function renderHistory(){
+  var el=document.getElementById('hist-content');
+  if(!el)return;
+  if(!adm){el.innerHTML='<div style="text-align:center;padding:24px;color:#555;font-size:.78rem;">Acces reserve aux administrateurs.</div>';return;}
+  pruneHist();
+  var log=getHist();
+  if(!log.length){el.innerHTML='<div style="text-align:center;padding:24px;color:#555;font-size:.78rem;">Aucune activite enregistree sur les dernieres 72 heures.</div>';return;}
+  var groups={};var order=[];
+  log.slice().reverse().forEach(function(h){
+    if(!groups[h.cat]){groups[h.cat]=[];order.push(h.cat);}
+    groups[h.cat].push(h);
+  });
+  var h='';
+  order.forEach(function(cat){
+    h+='<div style="margin-bottom:16px;">';
+    h+='<div style="font-family:\'Bebas Neue\',sans-serif;font-size:.9rem;letter-spacing:2px;color:var(--gld);margin-bottom:6px;">'+cat+'</div>';
+    h+='<div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:10px 12px;">';
+    groups[cat].forEach(function(entry,i){
+      var d=new Date(entry.ts);
+      var timeStr=d.toLocaleDateString('fr-FR')+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+      h+='<div style="padding:7px 0;'+(i<groups[cat].length-1?'border-bottom:1px solid #222;':'')+'font-size:.78rem;">'
+        +'<div style="color:#555;font-size:.62rem;margin-bottom:2px;">'+timeStr+'</div>'
+        +'<div style="color:#ddd;">'+entry.msg+'</div>'
+        +'</div>';
+    });
+    h+='</div></div>';
+  });
+  el.innerHTML=h;
 }
 
 function renderLoto(){
@@ -6505,6 +6615,7 @@ function applyBgBottom(url){
   <button class="tb" onclick="ST('f')" id="tf" style="display:none;"><div class="ic" style="background:#2ecc71">💰</div><span>Caisse</span></button>
   <button class="tb" onclick="ST('g')" id="tg"><div class="ic" style="background:#f1c40f">💡</div><span>Sugg</span><span id="suggest-badge" style="display:none;position:absolute;top:-2px;right:18%;background:#e74c3c;color:#fff;border-radius:50%;width:16px;height:16px;font-size:.55rem;font-weight:700;align-items:center;justify-content:center;border:2px solid #161616;">0</span></button>
   <button class="tb" onclick="ST('n')" id="tn"><div class="ic" style="background:#c0392b">🔔</div><span>Notifs</span><span id="notif-badge" style="display:none;position:absolute;top:-2px;right:18%;background:#e74c3c;color:#fff;border-radius:50%;width:16px;height:16px;font-size:.6rem;font-weight:700;align-items:center;justify-content:center;border:2px solid #161616;">!</span></button>
+  <button class="tb" onclick="ST('hist')" id="tb-hist" style="display:none;"><div class="ic" style="background:#7f8c8d">🕓</div><span>Historique</span></button>
 </div>
 <div class="pg-wrap" id="pages-wrap">
 
@@ -6544,6 +6655,13 @@ function applyBgBottom(url){
   <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:3px;margin-bottom:2px;">📋 FEUILLES DE GARDE</div>
   <div style="font-size:.65rem;color:#555;letter-spacing:2px;margin-bottom:14px;">JOUR ET NUIT — VALABLE POUR LA GARDE EN COURS</div>
   <div id="gs-content"></div>
+</div>
+
+<div id="phist" class="pg">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:3px;margin-bottom:2px;">🕓 HISTORIQUE</div>
+  <div style="font-size:.65rem;color:#555;letter-spacing:2px;margin-bottom:6px;">DERNIERES 72 HEURES — TOUS LES ONGLETS</div>
+  <div style="margin-bottom:14px;"><button onclick="resetHistory()" style="background:#2a1a1a;color:#e74c3c;border:1px solid #5a2a2a;border-radius:10px;padding:9px 16px;font-size:.75rem;cursor:pointer;">🗑️ Reinitialiser l'historique</button></div>
+  <div id="hist-content"></div>
 </div>
 
 <div id="ppoker" class="pg">
